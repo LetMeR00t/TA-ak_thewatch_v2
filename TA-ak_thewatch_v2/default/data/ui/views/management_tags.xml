@@ -1,0 +1,408 @@
+<form>
+  <label>Manage: Tags</label>
+  <description>This dashboard allows you to manage tags</description>
+  <init>
+    <eval token="last_refresh">now()</eval>
+  </init>
+  <fieldset submitButton="false" autoRun="false">
+    <input type="dropdown" token="mode">
+      <label>Mode</label>
+      <choice value="add">Add</choice>
+      <choice value="edit">Edit</choice>
+      <choice value="delete">Delete</choice>
+      <choice value="show">Show</choice>
+      <default>show</default>
+      <initialValue>show</initialValue>
+      <change>
+        <condition value="add">
+          <set token="mode_html_text">Add tag(s)</set>
+          <set token="mode_html_icon">plus-circle</set>
+          <set token="mode_html_color">green</set>
+          <set token="enable_add_inputs_dashboards">1</set>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="help_text">To add a new tag, please fill in these inputs</set>
+        </condition>
+        <condition value="delete">
+          <set token="mode_html_text">Delete tag(s)</set>
+          <set token="mode_html_icon">times-circle</set>
+          <set token="mode_html_color">red</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_delete_inputs_dashboards">1</set>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To delete a tag, please click on it</set>
+        </condition>
+        <condition value="show">
+          <set token="mode_html_text">Show tag(s)</set>
+          <set token="mode_html_icon">info-circle</set>
+          <set token="mode_html_color">#0099ff</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <set token="help_text">List of current tags (READ-ONLY)</set>
+        </condition>
+        <condition value="edit">
+          <set token="mode_html_text">Edit tag(s)</set>
+          <set token="mode_html_icon">cogs</set>
+          <set token="mode_html_color">#c384e8</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <set token="enable_edit_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To edit a tag, please fill in one of these inputs and click on the tag below</set>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="enable_hidden_panels">
+      <label>Debug</label>
+      <choice value="true">True</choice>
+      <choice value="false">False</choice>
+      <default>false</default>
+      <initialValue>false</initialValue>
+      <change>
+        <condition value="true">
+          <set token="debug">1</set>
+        </condition>
+        <condition value="false">
+          <unset token="debug"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="help">
+      <label>Help</label>
+      <choice value="show">Show</choice>
+      <choice value="hide">Hide</choice>
+      <default>hide</default>
+      <initialValue>hide</initialValue>
+      <change>
+        <condition value="show">
+          <set token="help">1</set>
+        </condition>
+        <condition value="hide">
+          <unset token="help"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "$mode_html_text$", icon = "$mode_html_icon$", color = "$mode_html_color$"
+| table text, icon, color</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">51</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">info-circle</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_show_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="dropdown" token="add_type" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Type</label>
+        <choice value="Team">Team</choice>
+        <choice value="Product">Product</choice>
+      </input>
+      <input type="dropdown" token="add_set_id" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Qualification set to use</label>
+        <default>5431946355d5e62359f47290f8143955f93ba511</default>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_qualification_sets</query>
+        </search>
+      </input>
+      <input type="text" token="add_name" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Name</label>
+      </input>
+      <input type="dropdown" token="add_default_score" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Default Score</label>
+        <choice value="0">0</choice>
+        <choice value="0.5">0.5</choice>
+        <choice value="1">1</choice>
+        <choice value="2">2</choice>
+        <choice value="3">3</choice>
+        <choice value="4">4</choice>
+        <choice value="5">5</choice>
+        <choice value="6">6</choice>
+        <choice value="7">7</choice>
+        <choice value="8">8</choice>
+        <choice value="9">9</choice>
+        <choice value="10">10</choice>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_tags
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_tags()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Qualification set used">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <fields>["Type","Name","Default score for NEW qualification","Qualification set used"]</fields>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_edit_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="dropdown" token="edit_type" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Type</label>
+        <choice value="Team">Team</choice>
+        <choice value="Product">Product</choice>
+      </input>
+      <input type="dropdown" token="edit_set_id" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Qualification set to use</label>
+        <default>5431946355d5e62359f47290f8143955f93ba511</default>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_qualification_sets</query>
+        </search>
+      </input>
+      <input type="text" token="edit_name" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Name</label>
+      </input>
+      <input type="dropdown" token="edit_default_score" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Default Score</label>
+        <choice value="0">0</choice>
+        <choice value="0.5">0.5</choice>
+        <choice value="1">1</choice>
+        <choice value="2">2</choice>
+        <choice value="3">3</choice>
+        <choice value="4">4</choice>
+        <choice value="5">5</choice>
+        <choice value="6">6</choice>
+        <choice value="7">7</choice>
+        <choice value="8">8</choice>
+        <choice value="9">9</choice>
+        <choice value="10">10</choice>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_tags
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_tags()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Qualification set used">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <fields>["Type","Name","Default score for NEW qualification","Qualification set used"]</fields>
+        <drilldown>
+          <condition field="Name">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">name</set>
+            <eval token="edit_value">if(isnotnull($edit_name$) AND $edit_name$!="",$edit_name$,$row.Name$)</eval>
+          </condition>
+          <condition field="Type">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">type</set>
+            <eval token="edit_value">if(isnotnull($edit_type$) AND $edit_type$!="",$edit_type$,$row.Type$)</eval>
+          </condition>
+          <condition field="Default score for NEW qualification">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">default_score_new_qualification</set>
+            <eval token="edit_value">if(isnotnull($edit_default_score$) AND $edit_default_score$!="",$edit_default_score$,$row.Default score for NEW qualification$)</eval>
+          </condition>
+          <condition field="Qualification set used">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">set_id</set>
+            <eval token="edit_value">if(isnotnull($edit_set_id$) AND $edit_set_id$!="",$edit_set_id$,$row.Qualification set used$)</eval>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_delete_inputs_dashboards$">
+      <title>$help_text$</title>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_tags
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_tags()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Qualification set used">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <fields>["Type","Name","Default score for NEW qualification","Qualification set used"]</fields>
+        <drilldown>
+          <set token="delete_id">$row.id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Add a new tag</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="add_name"></unset>
+              <unset token="form.add_name"></unset>
+              <unset token="add_type"></unset>
+              <unset token="form.add_type"></unset>
+              <unset token="add_default_score"></unset>
+              <unset token="form.add_default_score"></unset>
+              <unset token="add_set_id"></unset>
+              <unset token="form.add_set_id"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_tags
+| append
+    [| makeresults
+    | eval name="$add_name$", type="$add_type$", default_score_new_qualification="$add_default_score$", set_id="$add_set_id$", updated=now(), id=sha1(name+type)
+    `THEWATCH_audit_event("Tag",$env:user$,"add","Add a new tag")`
+    | table id, name, type, default_score_new_qualification, set_id, updated]
+| dedup id
+| sort 0 type name
+| outputlookup thewatch_tags</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Edit a tag</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="edit_id"></unset>
+              <unset token="edit_field"></unset>
+              <unset token="edit_value"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_tags
+| eval $edit_field$=if(id=="$edit_id$","$edit_value$",$edit_field$), updated=if(id=="$edit_id$",now(),updated), id=sha1(name+type)
+`THEWATCH_audit_event("Tag",$env:user$,"edit","Edit a tag")`
+| dedup id
+| sort 0 type name
+| outputlookup thewatch_tags</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Delete a tag</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="delete_id"></unset>
+              <unset token="form.delete_id"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_tags
+| eval updated=if(id=="$delete_id$",now(),updated)
+`THEWATCH_audit_event("Tag",$env:user$,"remove","Remove a tag")`
+| where id!="$delete_id$"
+| outputlookup thewatch_tags</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

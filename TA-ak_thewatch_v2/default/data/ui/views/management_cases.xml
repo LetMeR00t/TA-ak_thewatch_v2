@@ -1,0 +1,514 @@
+<form>
+  <label>Manage: Cases</label>
+  <description>This dashboard allows you to manage cases</description>
+  <init>
+    <eval token="last_refresh">now()</eval>
+  </init>
+  <fieldset submitButton="false" autoRun="false">
+    <input type="dropdown" token="mode">
+      <label>Mode</label>
+      <choice value="add">Add</choice>
+      <choice value="edit">Edit</choice>
+      <choice value="delete">Delete</choice>
+      <choice value="show">Show</choice>
+      <default>show</default>
+      <initialValue>show</initialValue>
+      <change>
+        <condition value="add">
+          <set token="mode_html_text">Add case(s)</set>
+          <unset token="show_artifact_list"></unset>
+          <set token="mode_html_icon">plus-circle</set>
+          <set token="mode_html_color">green</set>
+          <set token="enable_add_inputs_dashboards">1</set>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="help_text">To add a new case, please fill in these inputs</set>
+        </condition>
+        <condition value="delete">
+          <set token="mode_html_text">Delete case(s)</set>
+          <unset token="show_artifact_list"></unset>
+          <set token="mode_html_icon">times-circle</set>
+          <set token="mode_html_color">red</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_delete_inputs_dashboards">1</set>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To delete a case, please click on it</set>
+        </condition>
+        <condition value="show">
+          <unset token="show_artifact_list"></unset>
+          <set token="mode_html_text">Show case(s)</set>
+          <set token="mode_html_icon">info-circle</set>
+          <set token="mode_html_color">#0099ff</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <set token="help_text">List of current cases (READ-ONLY)</set>
+        </condition>
+        <condition value="edit">
+          <unset token="show_artifact_list"></unset>
+          <set token="mode_html_text">Edit case(s)</set>
+          <set token="mode_html_icon">cogs</set>
+          <set token="mode_html_color">#c384e8</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <set token="enable_edit_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To edit a case, please fill in one of these inputs and click on the tag below</set>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="enable_hidden_panels">
+      <label>Debug</label>
+      <choice value="true">True</choice>
+      <choice value="false">False</choice>
+      <default>false</default>
+      <initialValue>false</initialValue>
+      <change>
+        <condition value="true">
+          <set token="debug">1</set>
+        </condition>
+        <condition value="false">
+          <unset token="debug"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="help">
+      <label>Help</label>
+      <choice value="show">Show</choice>
+      <choice value="hide">Hide</choice>
+      <default>hide</default>
+      <initialValue>hide</initialValue>
+      <change>
+        <condition value="show">
+          <set token="help">1</set>
+        </condition>
+        <condition value="hide">
+          <unset token="help"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "$mode_html_text$", icon = "$mode_html_icon$", color = "$mode_html_color$"
+| table text, icon, color</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">51</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">info-circle</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_show_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="text" token="add_name" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Name</label>
+      </input>
+      <input type="dropdown" token="add_tags" depends="$enable_add_inputs_dashboards$">
+        <label>[ADD] Tags</label>
+        <fieldForLabel>tag_label</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_tags
+| eval tag_label = name+" ("+type+")"</query>
+        </search>
+        <default>56679868643678cdfe84acbae3bce8cf9f8763dc</default>
+      </input>
+      <input type="dropdown" token="add_aggregation" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Aggregation type:</label>
+        <choice value="alert">Alert</choice>
+        <choice value="case_qualification">Case + Qualification</choice>
+      </input>
+      <input type="text" token="add_description" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Description</label>
+      </input>
+      <input type="dropdown" token="add_severity_levels_id" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Severity levels</label>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_severity_levels</query>
+        </search>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_cases
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_cases()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <fields>["ID","Name","Description","Tags","Aggregation","Severity Levels"]</fields>
+        <format type="color" field="Aggregation">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_edit_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="text" token="edit_name" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Name</label>
+      </input>
+      <input type="dropdown" token="edit_tags" searchWhenChanged="true">
+        <label>[EDIT] Tags</label>
+        <fieldForLabel>tag_label</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_tags
+| eval tag_label = name+" ("+type+")"</query>
+        </search>
+      </input>
+      <input type="dropdown" token="edit_aggregation" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Aggregation type:</label>
+        <choice value="alert">Alert</choice>
+        <choice value="case_qualification">Case + Qualification</choice>
+      </input>
+      <input type="text" token="edit_description" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Description</label>
+      </input>
+      <input type="dropdown" token="edit_severity_levels_id" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Severity levels</label>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_severity_levels</query>
+        </search>
+      </input>
+      <table>
+        <title>If you want to remove an artifact from a case, please click on the CaseID to see related artifacts.</title>
+        <search>
+          <query>| inputlookup thewatch_cases
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_cases_edit`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Aggregation">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <fields>["ID","Name","Description","Tags","Aggregation","Severity Levels"]</fields>
+        <drilldown>
+          <condition field="Name">
+            <set token="edit_id">$row.ID$</set>
+            <set token="edit_field">name</set>
+            <eval token="edit_value">if(isnotnull($edit_name$) AND $edit_name$!="",$edit_name$,$row.Name$)</eval>
+          </condition>
+          <condition field="Description">
+            <set token="edit_id">$row.ID$</set>
+            <set token="edit_field">description</set>
+            <eval token="edit_value">if(isnotnull($edit_description$) AND $edit_description$!="",$edit_description$,$row.Description$)</eval>
+          </condition>
+          <condition field="Tags">
+            <set token="edit_id">$row.ID$</set>
+            <set token="edit_field">tag_id</set>
+            <eval token="edit_value">if(isnotnull($edit_tags$) AND $edit_tags$!="",$edit_tags$,$row.Tags$)</eval>
+          </condition>
+          <condition field="Severity Levels">
+            <set token="edit_id">$row.ID$</set>
+            <set token="edit_field">severity_levels_id</set>
+            <eval token="edit_value">if(isnotnull($edit_severity_levels_id$) AND $edit_severity_levels_id$!="",$edit_severity_levels_id$,$row.Severity Levels$)</eval>
+          </condition>
+          <condition field="Aggregation">
+            <set token="edit_id">$row.ID$</set>
+            <set token="edit_field">aggregation</set>
+            <eval token="edit_value">if(isnotnull($edit_aggregation$) AND $edit_aggregation$!="",$edit_aggregation$,$row.Aggregation$)</eval>
+          </condition>
+          <condition field="ID">
+            <set token="show_artifact_list">1</set>
+            <set token="case_id_to_edit">$row.ID$</set>
+            <set token="case_name_to_edit">$row.Name$</set>
+          </condition>
+          <condition></condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_delete_inputs_dashboards$">
+      <title>$help_text$</title>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_cases
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_cases`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <fields>["ID","Name","Description","Tags","Aggregation","Severity Levels"]</fields>
+        <format type="color" field="Aggregation">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <drilldown>
+          <set token="delete_id">$row.ID$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$show_artifact_list$">
+      <title>Click on the artifact you want to delete from this case: $case_name_to_edit$</title>
+      <table>
+        <search>
+          <query>| rest servicesNS/-/-/data/transforms/lookups
+| rename eai:acl.app as app
+| where match(app,"TA-ak_thewatch_v2") AND match(title,"^thewatch_admin_artifact_.*")
+| table title
+| map search="| inputlookup $$title$$ | eval title = \"$$title$$\"" maxsearches=10000
+| eval type=upper(trim(replace(title, "thewatch_admin_artifact_", "")))
+| where case_id="$case_id_to_edit$"
+| table id artifact type description title
+| rename artifact as Artifact, type as Type, description as Description</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Aggregation">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <fields>["Artifact","Description","Type"]</fields>
+        <drilldown>
+          <set token="artifact_id_to_remove">$row.ID$</set>
+          <set token="artifact_lookup">$row.title$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] DELETE Artifact from case</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="artifact_lookup"></unset>
+              <unset token="artifact_id_to_remove"></unset>
+              <unset token="edit_value"></unset>
+              <unset token="case_id_to_edit"></unset>
+              <unset token="show_artifact_list"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $artifact_lookup$
+| where match(id,"$artifact_id_to_remove$")
+| eval case_id=mvfilter(!match(case_id,"$case_id_to_edit$"))
+| outputlookup $artifact_lookup$
+</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>  
+  
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Add a new case</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="add_name"></unset>
+              <unset token="form.add_name"></unset>
+              <unset token="add_description"></unset>
+              <unset token="form.add_description"></unset>
+              <unset token="add_tags"></unset>
+              <unset token="form.add_tags"></unset>
+              <unset token="add_aggregation"></unset>
+              <unset token="form.add_aggregation"></unset>
+              <unset token="add_severity_levels_id"></unset>
+              <unset token="form.add_severity_levels_id"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_cases
+| append
+    [| makeresults
+    | eval name="$add_name$", description="$add_description$", tag_id = "$add_tags$", aggregation="$add_aggregation$", severity_levels_id="$add_severity_levels_id$", updated=now(), id=sha1(name+description)
+    `THEWATCH_audit_event("Case",$env:user$,"add","Add a new case")`
+    | table id, name, description, tag_id, aggregation, severity_levels_id, updated]
+| dedup id
+| sort 0 updated
+| outputlookup thewatch_cases</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Edit a case</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="edit_id"></unset>
+              <unset token="edit_field"></unset>
+              <unset token="edit_value"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_cases
+| eval $edit_field$=if(id=="$edit_id$","$edit_value$",$edit_field$), updated=if(id=="$edit_id$",now(),updated), id=sha1(name+description)
+`THEWATCH_audit_event("Case",$env:user$,"edit","Edit a case")`
+| dedup id
+| sort 0 updated
+| outputlookup thewatch_cases</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Delete a case (1/2)</title>
+      <table>
+        <title>Remove the case from ongoing artifacts</title>
+        <search>
+          <done>
+            <condition>
+              <set token="sid_remove_case_from_actifacts">$job.sid$</set>
+            </condition>
+          </done>
+          <query>| rest servicesNS/-/-/data/transforms/lookups
+| rename eai:acl.app as app
+| where match(app,"TA-ak_thewatch") AND match(title,"^thewatch_admin_artifact_.*")
+| table title
+| map search="| inputlookup $$title$$ | eval case_id = mvfilter(NOT match(case_id,"$delete_id$")) | outputlookup $$title$$" maxsearches=10000</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Delete a case (2/2)</title>
+      <table>
+        <title>Delete the case from the lookup</title>
+        <search>
+          <done>
+            <condition>
+              <unset token="delete_id"></unset>
+              <unset token="form.delete_id"></unset>
+              <eval token="last_refresh">now()</eval>
+              <unset token="sid_remove_case_from_actifacts"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_cases
+| eval updated=if(id=="$delete_id$",now(),updated), sid_remove_case_from_artifacts = "$sid_remove_case_from_actifacts$"
+`THEWATCH_audit_event("Case",$env:user$,"remove","Remove a case")`
+| where id!="$delete_id$"
+| outputlookup thewatch_cases</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

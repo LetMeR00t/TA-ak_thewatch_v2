@@ -1,0 +1,803 @@
+<form stylesheet="thewatch_signatures.css" script="thewatch_signatures.js">
+  <label>Detection: Event Qualification</label>
+  <description>This dashboard is used to qualify notable events found by The Watch</description>
+  <init>
+    <unset token="format_qualification_color"></unset>
+    <set token="status_text">SEARCH EVENT: WAITING FOR CASE NAME</set>
+    <set token="status_color">red</set>
+    <set token="final_qualification">⇑ You must select inputs to specify the qualification you want to do ⇑</set>
+    <set token="log">No work log</set>
+    <eval token="last_update_signatures">now()</eval>
+    <unset token="qualify_tag"></unset>
+  </init>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="case_id">
+      <label>Case name</label>
+      <fieldForLabel>name</fieldForLabel>
+      <fieldForValue>id</fieldForValue>
+      <search>
+        <query>| inputlookup thewatch_cases</query>
+        <earliest>$time.earliest$</earliest>
+        <latest>$time.latest$</latest>
+      </search>
+      <choice value="*">Any</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="time" token="time">
+      <label>Time</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input id="dropdown_current_qualification" type="multiselect" token="filter_qualification">
+      <label>Current Qualification</label>
+      <choice value="*">Any</choice>
+      <choice value="NEW">NEW</choice>
+      <default>*</default>
+      <fieldForLabel>name</fieldForLabel>
+      <fieldForValue>name</fieldForValue>
+      <search>
+        <query>| inputlookup thewatch_qualification_labels
+| sort 0 name</query>
+      </search>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>"</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>, </delimiter>
+    </input>
+    <input type="radio" token="debug">
+      <label>Debug</label>
+      <choice value="0">No</choice>
+      <choice value="1">Yes</choice>
+      <default>0</default>
+      <change>
+        <condition value="1">
+          <set token="show_debug">1</set>
+        </condition>
+        <condition>
+          <unset token="show_debug"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| makeresults
+| eval text = "Notable events found"
+| table text</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">54</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">crosshairs</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#f1813f</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$show_by_case_qualification$">
+      <title>Group of notable events detected during the period by case and qualification</title>
+      <input type="dropdown" token="filter_artifact_id">
+        <label>[Filter] Artifact</label>
+        <choice value="*">Any</choice>
+        <default>*</default>
+        <initialValue>*</initialValue>
+        <fieldForLabel>thewatch_artifact</fieldForLabel>
+        <fieldForValue>thewatch_artifact_id</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,*,*)`
+| stats count by thewatch_artifact thewatch_artifact_id</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <table>
+        <title>Choose and click on a case to Analyse</title>
+        <search>
+          <query>`THEWATCH_get_detections_by_case_qualification_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| search thewatch_nearest_qualification_name IN $filter_qualification$
+| eval enabled = "$show_by_case_qualification$", refresh = $last_update_signatures$, thewatch_artifact = mvjoin(thewatch_artifact,", ")
+| fields - enabled last_refresh
+`THEWATCH_format_log_fields`</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Current Qualification">
+          <colorPalette type="map">$format_qualification_color$</colorPalette>
+        </format>
+        <fields>["Case","Current Qualification","Earliest event time","Latest event time","Related Tag","Artifacts","Additional enrichment(s)","#Events"]</fields>
+        <drilldown>
+          <set token="thewatch_analysis_type">case_qualification</set>
+          <set token="thewatch_analysis_type_case_qualification">1</set>
+          <unset token="thewatch_analysis_type_alert"></unset>
+          <set token="thewatch_analysis_case">$row.thewatch_artifact_case_id$</set>
+          <set token="thewatch_analysis_field">thewatch_artifact_case_id</set>
+          <set token="thewatch_analysis_value">$row.thewatch_artifact_case_id$</set>
+          <set token="thewatch_analysis_value_shown">case: $row.Case$ ($row.Current Qualification$)</set>
+          <set token="thewatch_analysis_qualification">"$row.thewatch_nearest_qualification_id$"</set>
+          <set token="thewatch_analysis_earliest_time">$row.thewatch_evt$</set>
+          <set token="thewatch_analysis_latest_time">$row.thewatch_lvt$</set>
+          <set token="qualify_tag">$row.thewatch_artifact_tag_id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$show_by_alert$">
+      <title>Group of notable events detected during the period by alert</title>
+      <input type="dropdown" token="filter_artifact_id">
+        <label>[Filter] Artifact</label>
+        <choice value="*">Any</choice>
+        <default>*</default>
+        <initialValue>*</initialValue>
+        <fieldForLabel>thewatch_artifact</fieldForLabel>
+        <fieldForValue>thewatch_artifact_id</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,*,*)`
+| stats count by thewatch_artifact thewatch_artifact_id</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <table>
+        <search>
+          <query>`THEWATCH_get_detections_by_alert_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| search thewatch_nearest_qualification_name="$filter_qualification$"
+| eval enabled = "$show_by_alert$", refresh = $last_update_signatures$
+| fields - enabled last_refresh
+`THEWATCH_format_log_fields`
+| rename id as "Alert ID"</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Severity">
+          <colorPalette type="map">{"LOW":#11B3E5,"MEDIUM":#F1813F,"HIGH":#DC4E41,"CRITICAL":#5A4575}</colorPalette>
+        </format>
+        <format type="color" field="Status">
+          <colorPalette type="map">{"ONGOING":#F1813F,"NEW":#F8BE34,"CLOSED 🔄":#BFBFBF,"CLOSED ☑️":#BFBFBF}</colorPalette>
+        </format>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Events Qualifications">
+          <colorPalette type="map"></colorPalette>
+        </format>
+        <fields>["Alert ID","Latest event time","Status","Severity","Global Score","Related Tag","Case","Artifacts","Additional enrichment(s)","Events Qualifications","#Events"]</fields>
+        <drilldown>
+          <set token="thewatch_analysis_type">alert</set>
+          <unset token="thewatch_analysis_type_case_qualification"></unset>
+          <set token="thewatch_analysis_type_alert">1</set>
+          <set token="thewatch_analysis_case">$row.thewatch_artifact_case_id$</set>
+          <set token="thewatch_analysis_field">thewatch_alert_id</set>
+          <set token="thewatch_analysis_value">$row.thewatch_alert_id$</set>
+          <set token="thewatch_analysis_value_shown">alert #$row.Alert ID$</set>
+          <eval token="thewatch_analysis_qualification">"\""+mvjoin($row.thewatch_nearest_qualification_id$,"\",\"")+"\""</eval>
+          <set token="thewatch_analysis_earliest_time">$row.thewatch_evt$</set>
+          <set token="thewatch_analysis_latest_time">$row.thewatch_lvt$</set>
+          <set token="qualify_tag">$row.thewatch_artifact_tag_id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_field$">
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| makeresults
+| eval text = "⬇️ Analysis ($thewatch_analysis_value_shown$) ⬇️"
+| table text</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">91</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">search</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">3</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#f8be34</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_field$">
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| stats count as Total
+| eval text = Total+" events - Click to show raw events"
+| table text</query>
+          <earliest>$thewatch_analysis_earliest_time$</earliest>
+          <latest>$thewatch_analysis_latest_time$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="height">55</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">search</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#53a051</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <drilldown>
+          <condition>
+            <link target="_blank">/app/TA-ak_thewatch_v2/search?q=search `THEWATCH_get_notable_events_by_id(*%2C$case_id$%2C$filter_artifact_id$%2C*)`| where $thewatch_analysis_field$%3D%3D"$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)&amp;display.page.search.mode=verbose&amp;dispatch.sample_ratio=1&amp;earliest=$thewatch_analysis_earliest_time$&amp;latest=$thewatch_analysis_latest_time$</link>
+          </condition>
+        </drilldown>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_field$">
+      <title>Summary report by event qualification and artifact</title>
+      <table>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| eval thewatch_tag_name = thewatch_tag_name+" ("+thewatch_tag_type+")", thewatch_enrichment_name = mvzip(thewatch_enrichment_type, thewatch_enrichment_description,": "), thewatch_enrichment_name = if("$thewatch_analysis_type$"=="alert",mvzip(thewatch_enrichment_name,thewatch_enrichment_score," -&gt; "),thewatch_enrichment_name), thewatch_artifact = if("$thewatch_analysis_type$"=="alert",thewatch_artifact+" ("+thewatch_artifact_confidence_level+")",thewatch_artifact), thewatch_nearest_qualification_score = if("$thewatch_analysis_type$"=="alert",thewatch_nearest_qualification_score,"-"), thewatch_artifact_match_fields = mvmap(thewatch_artifact_match_fields,if(len(mvindex(split(thewatch_artifact_match_fields," == "),1))>100,substr(thewatch_artifact_match_fields,0,100)+"(...)",thewatch_artifact_match_fields))
+| fillnull value="-" thewatch_enrichment_name
+| stats values(thewatch_artifact_match_fields) as thewatch_artifact_match_fields, values(thewatch_enrichment_name) as thewatch_enrichment_name, count as total by thewatch_case_name, thewatch_artifact, thewatch_tag_name, thewatch_nearest_qualification_name, thewatch_nearest_qualification_score
+| table thewatch_case_name, thewatch_nearest_qualification_name, total, thewatch_tag_name, thewatch_artifact, thewatch_artifact_match_fields, thewatch_enrichment_name, thewatch_nearest_qualification_score
+`THEWATCH_format_log_fields`
+| rename "Artifacts" as "Artifacts (Confidence Level)"</query>
+          <earliest>$thewatch_analysis_earliest_time$</earliest>
+          <latest>$thewatch_analysis_latest_time$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Current Qualification">
+          <colorPalette type="map">$format_qualification_color$</colorPalette>
+        </format>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <drilldown>
+          <condition>
+            <link target="_blank">/app/TA-ak_thewatch_v2/search?q=search `THEWATCH_get_notable_events_by_id(*%2C$case_id$%2C$filter_artifact_id$%2C$row.Current Qualification$)`| where $thewatch_analysis_field$%3D%3D"$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)&amp;display.page.search.mode=verbose&amp;dispatch.sample_ratio=1&amp;earliest=$thewatch_analysis_earliest_time$&amp;latest=$thewatch_analysis_latest_time$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_field$">
+      <title>Signatures identified for these events</title>
+      <table>
+        <search>
+          <query>| rest servicesNS/-/-/saved/eventtypes search=thewatchQ_P* f=title f=search f=tags f=priority f=updated f=description count=0
+| join title
+    [search `THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+    | stats count by eventtype
+    | rename eventtype as title]
+`THEWATCH_format_signatures()`</query>
+          <earliest>$thewatch_analysis_earliest_time$</earliest>
+          <latest>$thewatch_analysis_latest_time$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Qualification">
+          <colorPalette type="map">$format_qualification_color$</colorPalette>
+        </format>
+        <fields>["Author (TW version)","Name","Related Tag","Search","Comment","Reference Number","Priority","Qualification"]</fields>
+        <drilldown>
+          <condition>
+            <link target="_blank">/app/TA-ak_thewatch_v2/management_signatures?form.mode=edit&amp;form.filter_edit=$row.Name$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_type_alert$">
+      <title>Actions</title>
+      <html>
+        <div id="all_alert_actions" class="wrapper">
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_type$">
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| makeresults
+| eval text = "Qualification"
+| table text</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">54</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">star</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#dc4e41</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_type$">
+      <input type="dropdown" token="qualify_sourcetype">
+        <label>Sourcetype</label>
+        <choice value="any">Any</choice>
+        <default>any</default>
+        <initialValue>any</initialValue>
+        <change>
+          <eval token="last_update">now()</eval>
+        </change>
+        <fieldForLabel>orig_sourcetype</fieldForLabel>
+        <fieldForValue>orig_sourcetype</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| stats count by orig_sourcetype</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <input type="radio" token="qualify_events_with_same">
+        <label>Events with same:</label>
+        <choice value="value">Field/Value (specific values)</choice>
+        <choice value="artifact">Artifact (pattern)</choice>
+        <choice value="case">Case name</choice>
+        <change>
+          <condition value="value">
+            <unset token="show_qualify_artifact"></unset>
+            <set token="show_qualify_field_value">1</set>
+            <unset token="show_qualify_case"></unset>
+            <eval token="last_update">now()</eval>
+          </condition>
+          <condition value="artifact">
+            <set token="show_qualify_artifact">1</set>
+            <unset token="show_qualify_field_value"></unset>
+            <unset token="show_qualify_case"></unset>
+            <unset token="show_qualify_other_value"></unset>
+            <eval token="last_update">now()</eval>
+          </condition>
+          <condition value="case">
+            <unset token="show_qualify_artifact"></unset>
+            <unset token="show_qualify_field_value"></unset>
+            <unset token="show_qualify_other_value"></unset>
+            <set token="show_qualify_case">1</set>
+            <eval token="last_update">now()</eval>
+          </condition>
+        </change>
+      </input>
+      <input id="input_qualify_artifact" type="multiselect" token="qualify_artifact" depends="$show_qualify_artifact$">
+        <label>Artifact:</label>
+        <change>
+          <eval token="last_update">now()</eval>
+        </change>
+        <fieldForLabel>thewatch_artifact</fieldForLabel>
+        <fieldForValue>thewatch_artifact</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| stats count by thewatch_artifact</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <delimiter> </delimiter>
+      </input>
+      <input id="input_qualify_field" type="dropdown" token="qualify_field" depends="$show_qualify_field_value$">
+        <label>Field</label>
+        <change>
+          <condition>
+            <unset token="qualify_value"></unset>
+            <unset token="form.qualify_value"></unset>
+          </condition>
+        </change>
+        <fieldForLabel>interesting_fields</fieldForLabel>
+        <fieldForValue>field</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| fieldsummary
+| where NOT match(field,"(?:orig_.*|thewatch_.*)")
+| where count&gt;0
+| table field
+| join type=left field
+    [search `THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+    | where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+    | eval thewatch_artifact_match_keys = mvindex(split(thewatch_artifact_match_keys," == "),1)
+    | stats count by thewatch_artifact_match_keys
+    | eval interesting_fields = replace(thewatch_artifact_match_keys,"^","* ")
+    | rename thewatch_artifact_match_keys as field
+    | table field, interesting_fields]
+| eval interesting_fields = coalesce(interesting_fields,field)
+| sort interesting_fields</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <input id="input_qualify_comparaison" type="dropdown" token="qualify_comparaison" depends="$show_qualify_field_value$">
+        <label>Comparaison</label>
+        <choice value="=">=</choice>
+        <choice value="&lt;">&lt;</choice>
+        <choice value="&gt;">&gt;</choice>
+        <choice value="&lt;=">&lt;=</choice>
+        <choice value="&gt;=">&gt;=</choice>
+        <choice value="!=">!=</choice>
+        <default>=</default>
+        <initialValue>=</initialValue>
+      </input>
+      <input id="input_qualify_value" type="dropdown" token="qualify_value" depends="$show_qualify_field_value$">
+        <label>Value (10,000 results max)</label>
+        <change>
+          <condition value="__other__">
+            <set token="show_qualify_other_value">1</set>
+            <unset token="qualify_other_value"></unset>
+            <unset token="form.qualify_other_value"></unset>
+          </condition>
+          <condition>
+            <unset token="show_qualify_other_value"></unset>
+          </condition>
+        </change>
+        <choice value="__other__">-- Other (Manual) --</choice>
+        <fieldForLabel>values</fieldForLabel>
+        <fieldForValue>values</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| top 10000 $qualify_field$
+| rename $qualify_field$ as values
+| table values</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <input id="input_qualify_other_value" type="text" token="qualify_other_value" depends="$show_qualify_other_value$">
+        <label>Other Value:</label>
+      </input>
+      <input id="input_qualify_field_value" type="multiselect" token="qualify_field_value" depends="$show_qualify_field_value$">
+        <label>Field/Value (Calculated)</label>
+        <change>
+          <eval token="last_update">now()</eval>
+        </change>
+        <delimiter> </delimiter>
+        <choice value="*">-</choice>
+      </input>
+      <input type="dropdown" token="qualify_case" depends="$show_qualify_case$">
+        <label>Case name</label>
+        <change>
+          <eval token="last_update">now()</eval>
+        </change>
+        <fieldForLabel>thewatch_case_name</fieldForLabel>
+        <fieldForValue>thewatch_artifact_case_id</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| stats count by thewatch_artifact_case_id, thewatch_case_name</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <input type="dropdown" token="qualify_action">
+        <label>Action</label>
+        <choice value="any">Any</choice>
+        <default>any</default>
+        <initialValue>any</initialValue>
+        <change>
+          <eval token="last_update">now()</eval>
+        </change>
+        <fieldForLabel>action</fieldForLabel>
+        <fieldForValue>action</fieldForValue>
+        <search>
+          <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
+| where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
+| stats count by action</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <input type="text" token="qualify_comment">
+        <label>Comment (mandatory)</label>
+      </input>
+      <input type="text" token="qualify_reference_number">
+        <label>Reference Number (optional)</label>
+      </input>
+      <input type="radio" token="qualify_mode">
+        <label>Mode</label>
+        <choice value="visual">Visual</choice>
+        <choice value="text">Text</choice>
+        <default>visual</default>
+        <initialValue>visual</initialValue>
+        <change>
+          <eval token="last_update">now()</eval>
+        </change>
+      </input>
+      <html>
+      <div class="wrapper">
+        <h1>$final_qualification$</h1>
+        <br/>
+      </div>
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_type$">
+      <html>
+        <div id="all_qualify_buttons" class="wrapper">
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$thewatch_analysis_type$">
+      <html>
+        <div class="wrapper">
+          <h2 id="header_log">$log$</h2>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| makeresults
+| eval text = "10 Latest Signatures"
+| table text</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">54</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">database</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#006d9c</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <progress>
+            <unset token="qualify_sourcetype"></unset>
+            <unset token="form.qualify_sourcetype"></unset>
+            <unset token="qualify_events_with_same"></unset>
+            <unset token="form.qualify_events_with_same"></unset>
+            <unset token="qualify_observable"></unset>
+            <unset token="form.qualify_observable"></unset>
+            <unset token="qualify_field_value"></unset>
+            <unset token="form.qualify_field_value"></unset>
+            <unset token="qualify_case"></unset>
+            <unset token="form.qualify_case"></unset>
+            <unset token="qualify_action"></unset>
+            <unset token="form.qualify_action"></unset>
+            <unset token="qualify_comment"></unset>
+            <unset token="form.qualify_comment"></unset>
+            <unset token="qualify_reference_number"></unset>
+            <unset token="form.qualify_reference_number"></unset>
+          </progress>
+          <query>| rest servicesNS/-/-/saved/eventtypes search=thewatchQ_P* f=title f=search f=tags f=priority f=updated f=description count=0
+`THEWATCH_format_signatures()`
+| sort 0 -"Last update"
+| table "Last update", Name, "Related Tag", "Search", Comment, "Reference Number", Priority, Qualification
+| head 10</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Qualification">
+          <colorPalette type="map">$format_qualification_color$</colorPalette>
+        </format>
+        <format type="color" field="Related Tag">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <drilldown>
+          <condition>
+            <link target="_blank">/app/TA-ak_thewatch_v2/management_signatures?form.mode=edit&amp;form.filter_edit=$row.Name$</link>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$show_debug$">
+      <title>[Debug] What are the qualifications to use ?</title>
+      <table>
+        <search>
+          <progress>
+            <unset token="format_qualification_color"></unset>
+          </progress>
+          <done>
+            <set token="format_qualification_color">$result.qualification_color$</set>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| table name, color
+| rex field=color mode=sed "s/[^(]+ \(([^)]+)\)/\1/g"
+| eval qualification = name+" ("+color+")"
+| rex field=qualification mode=sed "s/([^(]+) \(([^)]+)\)/\"\1\":\2/g"
+| append
+    [| makeresults
+    | eval qualification = "\"NEW\": #000000"
+    | table qualification]
+| stats values(qualification) as qualification_color
+| eval qualification_color = "{"+mvjoin(qualification_color,",")+"}"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$show_debug$">
+      <title>[Debug] Which kind of cases is existing ?</title>
+      <table>
+        <search>
+          <progress>
+            <unset token="show_by_alert"></unset>
+            <unset token="show_by_case_qualification"></unset>
+          </progress>
+          <done>
+            <condition match="$result.aggregation$==&quot;alert&quot;">
+              <eval token="show_by_alert">1</eval>
+              <unset token="show_by_case_qualification"></unset>
+            </condition>
+            <condition match="$result.aggregation$==&quot;case_qualification&quot;">
+              <unset token="show_by_alert"></unset>
+              <eval token="show_by_case_qualification">1</eval>
+            </condition>
+            <condition>
+              <eval token="show_by_alert">1</eval>
+              <eval token="show_by_case_qualification">1</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_cases where id="$case_id$"
+| stats values(aggregation) as aggregation</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$show_debug$">
+      <title>[Debug] Acknowledge alert</title>
+      <table>
+        <search>
+          <done>
+            <unset token="close_alert_id"></unset>
+            <eval token="last_update_signatures">now()</eval>
+          </done>
+          <query>| inputlookup thewatch_alerts
+| append 
+    [| makeresults
+    | eval id = "$close_alert_id$", time = now(), user="$env:user$"
+    | table id, time, user]
+| outputlookup thewatch_alerts</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

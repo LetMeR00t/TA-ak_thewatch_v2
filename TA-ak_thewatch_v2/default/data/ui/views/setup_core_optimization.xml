@@ -1,0 +1,77 @@
+<form>
+  <label>Setup: Core optimization</label>
+  <description>This dashboard helps you to optimize The Watch searches in all your infrastructure</description>
+  <init>
+    <eval token="last_refresh">now()</eval>
+  </init>
+  <fieldset submitButton="false" autoRun="false">
+    <input type="dropdown" token="mode">
+      <label>Mode</label>
+      <choice value="show">Show</choice>
+      <default>show</default>
+      <initialValue>show</initialValue>
+      <change>
+        <condition value="show">
+          <unset token="show_macro_list"></unset>
+          <set token="mode_html_text">Show macro(s)</set>
+          <set token="mode_html_icon">info-circle</set>
+          <set token="mode_html_color">#0099ff</set>
+          <set token="help_text">List of current macros for optimization by artifact type (READ-ONLY)</set>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "$mode_html_text$", icon = "$mode_html_icon$", color = "$mode_html_color$"
+| table text, icon, color</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">51</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">info-circle</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>| rest servicesNS/-/-/admin/macros count=0 splunk_server=local
+| rename eai:acl.app as app
+| where match(app,"TA-ak_thewatch_v2") AND match(title,"^THEWATCH_search")
+| eval type = upper(replace(replace(title,"THEWATCH_search_",""),"_"," "))
+| table type, definition
+| rename type as "Artifact type", definition as "Optimized macro"</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

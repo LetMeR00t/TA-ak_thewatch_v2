@@ -1,0 +1,556 @@
+<form>
+  <label>Manage: Qualifications - Labels</label>
+  <description>This dashboard allows you to manage qualifications</description>
+  <init>
+    <eval token="last_refresh">now()</eval>
+  </init>
+  <fieldset submitButton="false" autoRun="false">
+    <input type="dropdown" token="mode">
+      <label>Mode</label>
+      <choice value="add">Add</choice>
+      <choice value="edit">Edit</choice>
+      <choice value="delete">Delete</choice>
+      <choice value="show">Show</choice>
+      <default>show</default>
+      <initialValue>show</initialValue>
+      <change>
+        <condition value="add">
+          <set token="mode_html_text">Add qualification label(s)</set>
+          <set token="mode_html_icon">plus-circle</set>
+          <set token="mode_html_color">green</set>
+          <set token="enable_add_inputs_dashboards">1</set>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="help_text">To add a new qualification label, please fill in these inputs</set>
+        </condition>
+        <condition value="delete">
+          <set token="mode_html_text">Delete qualification label(s)</set>
+          <set token="mode_html_icon">times-circle</set>
+          <set token="mode_html_color">red</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_delete_inputs_dashboards">1</set>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To delete a qualification label, please click on it</set>
+        </condition>
+        <condition value="show">
+          <set token="mode_html_text">Show qualification label(s)</set>
+          <set token="mode_html_icon">info-circle</set>
+          <set token="mode_html_color">#0099ff</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <set token="help_text">List of current qualification labels (READ-ONLY)</set>
+        </condition>
+        <condition value="edit">
+          <set token="mode_html_text">Edit qualification label(s)</set>
+          <set token="mode_html_icon">cogs</set>
+          <set token="mode_html_color">#c384e8</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <set token="enable_edit_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To edit a qualification label, please fill in one of these inputs and click on the qualification label below. To add membership, select the new membership you want to add, and click on add membership in the action row. To delete membership, just click on the membership you want to delete.</set>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="enable_hidden_panels">
+      <label>Debug</label>
+      <choice value="true">True</choice>
+      <choice value="false">False</choice>
+      <default>false</default>
+      <initialValue>false</initialValue>
+      <change>
+        <condition value="true">
+          <set token="debug">1</set>
+        </condition>
+        <condition value="false">
+          <unset token="debug"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="help">
+      <label>Help</label>
+      <choice value="show">Show</choice>
+      <choice value="hide">Hide</choice>
+      <default>hide</default>
+      <initialValue>hide</initialValue>
+      <change>
+        <condition value="show">
+          <set token="help">1</set>
+        </condition>
+        <condition value="hide">
+          <unset token="help"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "$mode_html_text$", icon = "$mode_html_icon$", color = "$mode_html_color$"
+| table text, icon, color</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">51</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">info-circle</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_show_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="text" token="add_name" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Name</label>
+      </input>
+      <input type="text" token="add_description" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Description</label>
+      </input>
+      <input type="dropdown" token="add_set_id" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Set membership</label>
+        <default>5431946355d5e62359f47290f8143955f93ba511</default>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_qualification_sets</query>
+        </search>
+      </input>
+      <input type="dropdown" token="add_priority" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Priority</label>
+        <choice value="01">1 (Highest priority)</choice>
+        <choice value="02">2</choice>
+        <choice value="03">3</choice>
+        <choice value="04">4</choice>
+        <choice value="05">5</choice>
+        <choice value="06">6</choice>
+        <choice value="07">7</choice>
+        <choice value="08">8</choice>
+        <choice value="09">9</choice>
+        <choice value="10">10 (Middle)</choice>
+        <choice value="11">11</choice>
+        <choice value="12">12</choice>
+        <choice value="13">13</choice>
+        <choice value="14">14</choice>
+        <choice value="15">15</choice>
+        <choice value="16">16</choice>
+        <choice value="17">17</choice>
+        <choice value="18">18</choice>
+        <choice value="19">19</choice>
+        <choice value="20">20 (Lowest priority)</choice>
+      </input>
+      <input type="dropdown" token="add_color" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Color</label>
+        <choice value="blue (#007ABD)">Blue</choice>
+        <choice value="green (#53A051)">Green</choice>
+        <choice value="magenta (#CC5068)">Magenta</choice>
+        <choice value="orange (#F1813F)">Orange</choice>
+        <choice value="purple (#6A5C9E)">Purple</choice>
+        <choice value="red (#DC4E41)">Red</choice>
+        <choice value="sky (#006D9C)">Sky</choice>
+        <choice value="teal (#11A88B)">Teal</choice>
+        <choice value="yellow (#F8BE34)">Yellow</choice>
+      </input>
+      <input type="dropdown" token="add_score" depends="$enable_add_inputs_dashboards$">
+        <label>[NEW] Score</label>
+        <choice value="-2">-2</choice>
+        <choice value="-1">-1</choice>
+        <choice value="-0.5">-0.5</choice>
+        <choice value="0">0</choice>
+        <choice value="0.5">+0.5</choice>
+        <choice value="1">+1</choice>
+        <choice value="2">+2</choice>
+        <choice value="3">+3</choice>
+        <choice value="4">+4</choice>
+        <choice value="5">+5</choice>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_qualification_labels
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_qualification_labels()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <fields>["Priority","Name","Description","Color","Score","Set membership"]</fields>
+        <format type="color" field="Color">
+          <colorPalette type="map">{"blue (#007ABD)":#007ABD,"green (#53A051)":#53A051,"magenta (#CC5068)":#CC5068,"orange (#F1813F)":#F1813F,"purple (#6A5C9E)":#6A5C9E,"red (#DC4E41)":#DC4E41,"sky (#006D9C)":#006D9C,"teal (#11A88B)":#11A88B,"yellow (#F8BE34)":#F8BE34}</colorPalette>
+        </format>
+        <format type="color" field="Score">
+          <colorPalette type="minMidMax" maxColor="#DC4E41" minColor="#006D9C"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_edit_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="dropdown" token="edit_priority" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Priority</label>
+        <choice value="01">1 (Highest priority)</choice>
+        <choice value="02">2</choice>
+        <choice value="03">3</choice>
+        <choice value="04">4</choice>
+        <choice value="05">5</choice>
+        <choice value="06">6</choice>
+        <choice value="07">7</choice>
+        <choice value="08">8</choice>
+        <choice value="09">9</choice>
+        <choice value="10">10 (Middle)</choice>
+        <choice value="11">11</choice>
+        <choice value="12">12</choice>
+        <choice value="13">13</choice>
+        <choice value="14">14</choice>
+        <choice value="15">15</choice>
+        <choice value="16">16</choice>
+        <choice value="17">17</choice>
+        <choice value="18">18</choice>
+        <choice value="19">19</choice>
+        <choice value="20">20 (Lowest priority)</choice>
+      </input>
+      <input type="text" token="edit_name" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Name</label>
+      </input>
+      <input type="text" token="edit_description" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Description</label>
+      </input>
+      <input type="dropdown" token="edit_color" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Color</label>
+        <choice value="blue (#007ABD)">Blue</choice>
+        <choice value="green (#53A051)">Green</choice>
+        <choice value="magenta (#CC5068)">Magenta</choice>
+        <choice value="orange (#F1813F)">Orange</choice>
+        <choice value="purple (#6A5C9E)">Purple</choice>
+        <choice value="red (#DC4E41)">Red</choice>
+        <choice value="sky (#006D9C)">Sky</choice>
+        <choice value="teal (#11A88B)">Teal</choice>
+        <choice value="yellow (#F8BE34)">Yellow</choice>
+      </input>
+      <input type="dropdown" token="edit_score" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Score</label>
+        <choice value="-2">-2</choice>
+        <choice value="-1">-1</choice>
+        <choice value="-0.5">-0.5</choice>
+        <choice value="0">0</choice>
+        <choice value="0.5">+0.5</choice>
+        <choice value="1">+1</choice>
+        <choice value="2">+2</choice>
+        <choice value="3">+3</choice>
+        <choice value="4">+4</choice>
+        <choice value="5">+5</choice>
+      </input>
+      <input type="dropdown" token="edit_set_id" depends="$enable_edit_inputs_dashboards$">
+        <label>[EDIT] Set membership</label>
+        <default>5431946355d5e62359f47290f8143955f93ba511</default>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_qualification_sets</query>
+        </search>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_qualification_labels
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_qualification_labels_edit()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Color">
+          <colorPalette type="map">{"blue (#007ABD)":#007ABD,"green (#53A051)":#53A051,"magenta (#CC5068)":#CC5068,"orange (#F1813F)":#F1813F,"purple (#6A5C9E)":#6A5C9E,"red (#DC4E41)":#DC4E41,"sky (#006D9C)":#006D9C,"teal (#11A88B)":#11A88B,"yellow (#F8BE34)":#F8BE34}</colorPalette>
+        </format>
+        <format type="color" field="Score">
+          <colorPalette type="minMidMax" maxColor="#DC4E41" minColor="#006D9C"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <fields>["Priority","Name","Description","Color","Score","Set membership","Action"]</fields>
+        <drilldown>
+          <condition field="Name">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">name</set>
+            <eval token="edit_value">if(isnotnull($edit_name$) AND $edit_name$!="",$edit_name$,$row.Name$)</eval>
+          </condition>
+          <condition field="Description">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">description</set>
+            <eval token="edit_value">if(isnotnull($edit_description$) AND $edit_description$!="",$edit_description$,$row.Description$)</eval>
+          </condition>
+          <condition field="Priority">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">priority</set>
+            <eval token="edit_value">if(isnotnull($edit_priority$) AND $edit_priority$!="",$edit_priority$,$row.Priority$)</eval>
+          </condition>
+          <condition field="Color">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">color</set>
+            <eval token="edit_value">if(isnotnull($edit_color$) AND $edit_color$!="",$edit_color$,$row.Color$)</eval>
+          </condition>
+          <condition field="Score">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">score</set>
+            <eval token="edit_value">if(isnotnull($edit_score$) AND $edit_score$!="",$edit_score$,$row.Score$)</eval>
+          </condition>
+          <condition field="Set membership">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_remove_membership_set_id">replace($click.value2$,": .*","")</eval>
+            <set token="edit_remove_membership_set_field">set_id</set>
+          </condition>
+          <condition match="$click.value2$ == &quot;➕ Add membership to the set&quot;">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_add_membership_set_id">$edit_set_id$</set>
+            <set token="edit_add_membership_set_field">set_id</set>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_delete_inputs_dashboards$">
+      <title>$help_text$</title>
+      <table>
+        <search>
+          <query>| inputlookup thewatch_qualification_labels
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_qualification_labels()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Color">
+          <colorPalette type="map">{"blue (#007ABD)":#007ABD,"green (#53A051)":#53A051,"magenta (#CC5068)":#CC5068,"orange (#F1813F)":#F1813F,"purple (#6A5C9E)":#6A5C9E,"red (#DC4E41)":#DC4E41,"sky (#006D9C)":#006D9C,"teal (#11A88B)":#11A88B,"yellow (#F8BE34)":#F8BE34}</colorPalette>
+        </format>
+        <fields>["Priority","Name","Description","Color","Set membership"]</fields>
+        <drilldown>
+          <set token="delete_id">$row.id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Add a new qualification label</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="add_name"></unset>
+              <unset token="form.add_name"></unset>
+              <unset token="add_description"></unset>
+              <unset token="form.add_description"></unset>
+              <unset token="add_priority"></unset>
+              <unset token="form.add_priority"></unset>
+              <unset token="add_color"></unset>
+              <unset token="form.add_color"></unset>
+              <unset token="add_score"></unset>
+              <unset token="form.add_score"></unset>
+              <unset token="add_set_id"></unset>
+              <unset token="form.add_set_id"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| append
+    [| makeresults
+    | eval name="$add_name$", description="$add_description$", priority="$add_priority$",  color="$add_color$", score="$add_score$", key=name, set_id="$add_set_id$", id=substr(sha1(name+description+priority+color),0,10)
+    | rex field="key" mode="sed" "s/(\b[A-z])[^ \r\n]+ ?/\1/g"
+    | eval key = priority+"-"+key, priority = tonumber(priority)
+    | table id, key, name, description, priority, color, score, set_id]
+| dedup id
+| sort 0 priority key
+| outputlookup thewatch_qualification_labels</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Edit a qualification label</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="edit_id"></unset>
+              <unset token="edit_field"></unset>
+              <unset token="edit_value"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| eval $edit_field$=if(id=="$edit_id$","$edit_value$",$edit_field$), tmp_key=name, priority = if(len(priority)==1,"0"+priority,priority)
+| rex field="tmp_key" mode="sed" "s/(\b[A-z])[^ \r\n]+ ?/\1/g"
+| eval key = if(id=="$edit_id$",priority+"-"+tmp_key,key), priority = tonumber(priority)
+| dedup id
+| sort 0 priority key
+| table id, key, name, description, priority, color, score, set_id
+| outputlookup thewatch_qualification_labels</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Add a set membership on selected qualification label</title>
+      <table>
+        <title>Last changed : ID: $edit_id$ - Field : $edit_add_membership_set_id$ - Value : $edit_add_membership_set_field$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="last_refresh">now()</eval>
+              <unset token="edit_id"></unset>
+              <unset token="edit_add_membership_set_id"></unset>
+              <unset token="edit_add_membership_set_field"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| eval $edit_add_membership_set_field$=if(id=="$edit_id$",mvdedup(mvappend(mvfilter(NOT match($edit_add_membership_set_field$,"-")),"$edit_add_membership_set_id$")),$edit_add_membership_set_field$)
+`THEWATCH_audit_event("$edit_id$","-","-","thewatch_qualification_labels",$env:user$,"edit","Add qualification label to $edit_add_membership_set_field$")`
+| dedup id
+| sort 0 priority key
+| outputlookup thewatch_qualification_labels</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Remove a set membership on selected qualification label</title>
+      <table>
+        <title>Last changed : ID: $edit_id$ - Field : $edit_remove_membership_set_id$ - Value : $edit_remove_membership_set_field$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="last_refresh">now()</eval>
+              <unset token="edit_id"></unset>
+              <unset token="edit_remove_membership_set_field"></unset>
+              <unset token="edit_remove_membership_set_id"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| eval $edit_remove_membership_set_field$=if(id=="$edit_id$",mvfilter(NOT match($edit_remove_membership_set_field$,"^$edit_remove_membership_set_id$")),$edit_remove_membership_set_field$)
+`THEWATCH_audit_event("$edit_id$","-","-","thewatch_qualification_labels",$env:user$,"edit","Remove $edit_remove_membership_set_field$ from qualification labels")`
+| fillnull value="-" set_id
+| dedup id
+| sort 0 priority key
+| outputlookup thewatch_qualification_labels</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Delete a qualification label</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="delete_id"></unset>
+              <unset token="form.delete_id"></unset>
+              <eval token="last_refresh">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| where id!="$delete_id$"
+| outputlookup thewatch_qualification_labels</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

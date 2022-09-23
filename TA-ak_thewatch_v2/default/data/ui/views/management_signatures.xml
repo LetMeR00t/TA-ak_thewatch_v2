@@ -1,0 +1,292 @@
+<form script="thewatch_signatures.js">
+  <label>Manage: Signatures</label>
+  <description>This dashboard allows you to manage signatures. A signature is an eventtype with all information about the qualification</description>
+  <init>
+    <eval token="last_refresh">now()</eval>
+    <unset token="format_qualification_color"></unset>
+  </init>
+  <fieldset submitButton="false" autoRun="false">
+    <input type="dropdown" token="mode">
+      <label>Mode</label>
+      <choice value="edit">Edit</choice>
+      <choice value="delete">Delete</choice>
+      <choice value="show">Show</choice>
+      <default>show</default>
+      <initialValue>show</initialValue>
+      <change>
+        <condition value="delete">
+          <set token="mode_html_text">Delete signature(s)</set>
+          <set token="mode_html_icon">times-circle</set>
+          <set token="mode_html_color">red</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_delete_inputs_dashboards">1</set>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To delete a signature, please click on it</set>
+        </condition>
+        <condition value="show">
+          <set token="mode_html_text">Show signature(s)</set>
+          <set token="mode_html_icon">info-circle</set>
+          <set token="mode_html_color">#0099ff</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <set token="help_text">List of current signatures (READ-ONLY)</set>
+        </condition>
+        <condition value="edit">
+          <set token="mode_html_text">Edit signature(s)</set>
+          <set token="mode_html_icon">cogs</set>
+          <set token="mode_html_color">#c384e8</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <set token="enable_edit_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="help_text">To edit a signature, please fill in one of these inputs and click on the signature below. You can also load an existing entry in an input by clicking on it.</set>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="enable_hidden_panels">
+      <label>Debug</label>
+      <choice value="true">True</choice>
+      <choice value="false">False</choice>
+      <default>false</default>
+      <initialValue>false</initialValue>
+      <change>
+        <condition value="true">
+          <set token="debug">1</set>
+        </condition>
+        <condition value="false">
+          <unset token="debug"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="help">
+      <label>Help</label>
+      <choice value="show">Show</choice>
+      <choice value="hide">Hide</choice>
+      <default>hide</default>
+      <initialValue>hide</initialValue>
+      <change>
+        <condition value="show">
+          <set token="help">1</set>
+        </condition>
+        <condition value="hide">
+          <unset token="help"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "$mode_html_text$", icon = "$mode_html_icon$", color = "$mode_html_color$"
+| table text, icon, color</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">51</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">info-circle</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_show_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="text" token="filter_show" depends="$enable_show_inputs_dashboards$">
+        <label>🔵 [FILTER] Regexp on fields</label>
+        <default>.*</default>
+      </input>
+      <table>
+        <search>
+          <query>| rest servicesNS/-/-/saved/eventtypes search="thewatchQ_*" f=title f=search f=tags f=priority f=description f=color count=0 splunk_server=local
+| where match(title,"$filter_show$") OR match(search,"$filter_show$") OR match(description,"$filter_show$")
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_signatures()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Qualification">
+          <colorPalette type="map">$format_qualification_color$</colorPalette>
+        </format>
+        <fields>["Author (TW version)","Last update","Name","Related Tag","Search","Comment","Reference Number","Priority","Qualification"]</fields>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_edit_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="text" token="filter_edit" depends="$enable_edit_inputs_dashboards$">
+        <label>🔵 [FILTER] Regexp on fields</label>
+        <default>.*</default>
+      </input>
+      <input type="dropdown" token="filter_version" depends="$enable_edit_inputs_dashboards$">
+        <label>🔵 [FILTER] The Watch version</label>
+        <default>*</default>
+        <choice value="*">Any</choice>
+        <choice value="1">1</choice>
+        <choice value="2">2</choice>
+      </input>
+      <input id="id_edit_search" type="text" token="edit_search" depends="$enable_edit_inputs_dashboards$">
+        <label>🔴 [EDIT] Search</label>
+      </input>
+      <input id="id_edit_comment" type="text" token="edit_comment" depends="$enable_edit_inputs_dashboards$">
+        <label>🔴 [EDIT] Comment</label>
+      </input>
+      <input type="dropdown" token="edit_priority" depends="$enable_edit_inputs_dashboards$">
+        <label>🔴 [EDIT] Priority</label>
+        <choice value="1">1 (Highest)</choice>
+        <choice value="2">2</choice>
+        <choice value="3">3</choice>
+        <choice value="4">4</choice>
+        <choice value="5">5</choice>
+        <choice value="6">6</choice>
+        <choice value="7">7</choice>
+        <choice value="8">8</choice>
+        <choice value="9">9 (Lowest)</choice>
+      </input>
+      <input id="id_edit_reference_number" type="text" token="edit_reference_number" depends="$enable_edit_inputs_dashboards$">
+        <label>🔴 [EDIT] Reference Number</label>
+      </input>
+      <table id="modifytable">
+        <title>You can click on below existing values to preload them in the above inputs</title>
+        <search>
+          <query>| rest servicesNS/-/-/saved/eventtypes search="thewatchQ_*" f=title f=search f=tags f=priority f=description f=color count=0 splunk_server=local
+| where match(title,"$filter_edit$") OR match(search,"$filter_edit$") OR match(description,"$filter_edit$")
+| eval last_refresh = $last_refresh$
+`THEWATCH_format_signatures()`
+| search thewatch_version=$filter_version$
+| rename "Reference Number" as reference_number
+| eval Actions = if(isnull(tag_id),"❌ TheWatch v1 signature","▶️ Edit search;▶️ Edit comment;▶️ Edit reference number️"), Search = "⬆️ "+Search, Comment = "⬆️ "+ Comment, reference_number = "⬆️ "+reference_number
+| rename reference_number as "Reference Number"
+| makemv delim=";" Actions</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Qualification">
+          <colorPalette type="map">$format_qualification_color$</colorPalette>
+        </format>
+        <fields>["Name","Search","Comment","Reference Number","Priority","Qualification","Actions"]</fields>
+        <drilldown>
+          <condition field="Name">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">name</set>
+            <eval token="edit_value">if(isnotnull($edit_name$) AND $edit_name$!="",$edit_name$,$row.Name$)</eval>
+          </condition>
+          <condition field="Description">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">description</set>
+            <eval token="edit_value">if(isnotnull($edit_description$) AND $edit_description$!="",$edit_description$,$row.Description$)</eval>
+          </condition>
+          <condition field="Priority">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_field">priority</set>
+            <eval token="edit_value">if(isnotnull($edit_priority$) AND $edit_priority$!="",$edit_priority$,$row.Priority$)</eval>
+          </condition>
+          <condition></condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_delete_inputs_dashboards$">
+      <title>$help_text$</title>
+      <input type="text" token="filter_delete" depends="$enable_delete_inputs_dashboards$">
+        <label>🔵 [FILTER] Regexp on fields</label>
+        <default>.*</default>
+      </input>
+      <table id="deletetable">
+        <search>
+          <query>| rest servicesNS/-/-/saved/eventtypes search="thewatchQ_* OR thewatch_P*" f=title f=search f=tags f=priority f=description f=color count=0 splunk_server=local
+| where match(title,"$filter_delete$") OR match(search,"$filter_delete$") OR match(description,"$filter_delete$")
+``` Get ID from the description ```
+| spath input=description path=id output=id
+``` Color is like et_COLOR, so use a substring ```
+| eval last_refresh = $last_refresh$, color = substr(color,4), id = if(isnull(id),title,id)
+| table id, title, search, author
+| rename author as "Author", search as "Search", title as "Name"</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <fields>["Name","Search","Author"]</fields>
+        <drilldown>
+          <set token="delete_id">$row.id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <table>
+        <search>
+          <progress>
+            <unset token="format_qualification_color"></unset>
+          </progress>
+          <done>
+            <set token="format_qualification_color">$result.qualification_color$</set>
+          </done>
+          <query>| inputlookup thewatch_qualification_labels
+| table name, color
+| rex field=color mode=sed "s/[^(]+ \(([^)]+)\)/\1/g"
+| eval qualification = name+" ("+color+")"
+| rex field=qualification mode=sed "s/([^(]+) \(([^)]+)\)/\"\1\":\2/g"
+| stats values(qualification) as qualification_color
+| eval qualification_color = "{"+mvjoin(qualification_color,",")+"}"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

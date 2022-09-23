@@ -1,0 +1,1175 @@
+<form>
+  <init>
+    <eval token="refresh_statistics">now()</eval>
+    <set token="enable_lookup_type">1</set>
+    <unset token="add_artifacts"></unset>
+    <unset token="form.add_artifacts"></unset>
+    <unset token="add_description"></unset>
+    <unset token="form.add_description"></unset>
+    <unset token="add_tlp"></unset>
+    <unset token="form.add_tlp"></unset>
+    <unset token="add_lifetime"></unset>
+    <unset token="form.add_lifetime"></unset>
+    <unset token="add_confidence_level"></unset>
+    <unset token="form.add_confidence_level"></unset>
+  </init>
+  <label>Manage: Artifacts</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="dropdown" token="mode">
+      <label>Mode</label>
+      <choice value="add">Add</choice>
+      <choice value="delete">Delete</choice>
+      <choice value="edit">Edit</choice>
+      <choice value="show">Show</choice>
+      <default>show</default>
+      <initialValue>show</initialValue>
+      <change>
+        <condition value="add">
+          <set token="mode_html_text">Add new artifact(s)</set>
+          <set token="mode_html_icon">plus-circle</set>
+          <set token="mode_html_color">green</set>
+          <set token="enable_add_inputs_dashboards">1</set>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <set token="way">manually</set>
+          <set token="form.way">manually</set>
+          <set token="enable_add_manually_dashboards">1</set>
+          <unset token="enable_add_csv_lookup_dashboards"></unset>
+          <set token="help_text">To add a new artifact, please fill in these inputs</set>
+        </condition>
+        <condition value="delete">
+          <set token="mode_html_text">Delete artifact(s)</set>
+          <set token="mode_html_icon">times-circle</set>
+          <set token="mode_html_color">red</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <set token="enable_delete_inputs_dashboards">1</set>
+          <unset token="enable_add_manually_dashboards"></unset>
+          <unset token="enable_add_csv_lookup_dashboards"></unset>
+          <set token="help_text">To delete an artifact, please click on it</set>
+        </condition>
+        <condition value="show">
+          <set token="mode_html_text">View artifact(s)</set>
+          <set token="mode_html_icon">info-circle</set>
+          <set token="mode_html_color">#0099ff</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <unset token="enable_edit_inputs_dashboards"></unset>
+          <set token="enable_show_inputs_dashboards">1</set>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <unset token="enable_add_manually_dashboards"></unset>
+          <unset token="enable_add_csv_lookup_dashboards"></unset>
+          <set token="help_text">List of current artifacts (READ-ONLY)</set>
+        </condition>
+        <condition value="edit">
+          <set token="mode_html_text">Edit artifact(s)</set>
+          <set token="mode_html_icon">cogs</set>
+          <set token="mode_html_color">#c384e8</set>
+          <unset token="enable_add_inputs_dashboards"></unset>
+          <set token="enable_edit_inputs_dashboards">1</set>
+          <unset token="enable_show_inputs_dashboards"></unset>
+          <unset token="enable_delete_inputs_dashboards"></unset>
+          <unset token="enable_add_manually_dashboards"></unset>
+          <unset token="enable_add_csv_lookup_dashboards"></unset>
+          <set token="help_text">To edit an artifact, please fill in one of these inputs and click on the field below</set>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="way" depends="$enable_add_inputs_dashboards$" searchWhenChanged="false">
+      <label>Which way ?</label>
+      <choice value="manually">Manually</choice>
+      <choice value="csv_lookup">CSV Lookup</choice>
+      <change>
+        <condition value="manually">
+          <set token="enable_add_manually_dashboards">1</set>
+          <unset token="enable_add_csv_lookup_dashboards"></unset>
+        </condition>
+        <condition value="csv_lookup">
+          <unset token="enable_add_manually_dashboards"></unset>
+          <set token="enable_add_csv_lookup_dashboards">1</set>
+        </condition>
+        <condition>
+          <unset token="enable_add_manually_dashboards"></unset>
+          <unset token="enable_add_csv_lookup_dashboards"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="dropdown" token="lookup_type">
+      <label>Type</label>
+      <choice value="thewatch_admin_artifact_mail">Emails</choice>
+      <choice value="thewatch_admin_artifact_event_id_ad">Event ID (AD)</choice>
+      <choice value="thewatch_admin_artifact_file_name">File names</choice>
+      <choice value="thewatch_admin_artifact_hash">Hashes</choice>
+      <choice value="thewatch_admin_artifact_ip">IPs</choice>
+      <choice value="thewatch_admin_artifact_sourcetype">Sourcetypes</choice>
+      <choice value="thewatch_admin_artifact_url">URLs/Domains</choice>
+      <choice value="thewatch_admin_artifact_user">Users</choice>
+      <choice value="thewatch_admin_artifact_workstation">Workstations</choice>
+      <change>
+        <condition>
+          <unset token="artifacts"></unset>
+          <unset token="form.artifacts"></unset>
+          <unset token="lifetime"></unset>
+          <unset token="form.lifetime"></unset>
+          <unset token="csv_lookup"></unset>
+          <unset token="form.csv_lookup"></unset>
+          <unset token="case"></unset>
+          <unset token="form.case"></unset>
+          <unset token="description"></unset>
+          <unset token="form.description"></unset>
+          <unset token="tlp"></unset>
+          <unset token="form.tlp"></unset>
+          <unset token="confidence_level"></unset>
+          <unset token="form.confidence_level"></unset>
+          <set token="label_lookup_type">$label$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="enable_hidden_panels">
+      <label>Debug</label>
+      <choice value="true">True</choice>
+      <choice value="false">False</choice>
+      <default>false</default>
+      <initialValue>false</initialValue>
+      <change>
+        <condition value="true">
+          <set token="debug">1</set>
+        </condition>
+        <condition value="false">
+          <unset token="debug"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="radio" token="help">
+      <label>Help</label>
+      <choice value="show">Show</choice>
+      <choice value="hide">Hide</choice>
+      <default>hide</default>
+      <initialValue>hide</initialValue>
+      <change>
+        <condition value="show">
+          <set token="enable_help">1</set>
+        </condition>
+        <condition value="hide">
+          <unset token="enable_help"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+<row>
+    <panel depends="$enable_help$">
+      <title>About Artifacts</title>
+      <html>
+      <h1>Expected format</h1>
+      <ul>
+        <ol>
+            <b>IPs</b>: <font color="red">IP/mask</font> OR <font color="red">network/mask</font> (Ex: 1.2.3.4/32, 10.0.0.0/8 etc.)</ol>
+        <ol>
+            <b>URLs/Domains</b>: <font color="red">URLs</font> OR <font color="red">domains</font> without <b>
+              <u>http/https://</u>, wildcard is accepted everywhere
+            </b> (Ex: <s>https://</s>myblog.com/titi/toto, <s>https://</s>www.mywebsite.com, myaccount/*, *.myaccount.*.com etc.)</ol>
+        <ol>
+            <b>Mails</b>: <font color="red">Mails</font> with the complete address, <b>wildcard is accepted everywhere </b>(Ex: titi@toto.fr, robert.pirate@hackeur.com, *@toto.fr etc.)</ol>
+        <ol>
+            <b>Hashes</b>: <font color="red">Any format</font> (Ex: MD5, SHA1 etc.)</ol>
+        <ol>
+            <b>Workstations</b>: <font color="red">Any format</font> (Ex: MySuperComputerFromAnotherGalaxy etc.)</ol>
+        <ol>
+            <b>File names</b>: <font color="red">Any format with wildcard</font> (Ex: toto.txt, *.exe etc.)</ol>
+        <ol>
+            <b>Users</b>: <font color="red">Any format</font> (Ex: mXXXXXX etc.)</ol>
+      </ul>
+      </html>
+    </panel>
+    <panel depends="$enable_help$">
+      <title>About CSV Lookups</title>
+      <html>
+      <h3>
+          <u>Must be uploaded first as a CSV lookup in Splunk</u>
+        </h3>
+      <h1>Expected inputs</h1>
+      <ul>
+        <ol>
+            <b>artifact</b> (<font color="red">mandatory</font>): The artifact to monitor</ol>
+        <ol>
+            <b>type</b> (<font color="red">mandatory</font>): Define the artifact type [IP,HASH,MAIL,FILE_NAME,URL,USER,WORKSTATION]</ol>
+        <ol>
+            <b>description</b> (<font color="red">mandatory</font>): The description for this artifact, free text</ol>
+        <ol>
+            <b>example</b>:</ol>
+        <ol>artifact,description,type</ol>
+        <ol>*weird_username*,TEST 3,USER</ol>
+        <ol>*weir_username*,TEST 4,USER</ol>
+        <ol> </ol>
+        <ol><b>IMPORTANT:</b> You absolutely need to have the header line in the CSV file you import. You also need to provide all the asked fields in the import dashboard.</ol>
+              
+      </ul>
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "$mode_html_text$", icon = "$mode_html_icon$", color = "$mode_html_color$"
+| table text, icon, color</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">74</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">info-circle</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_add_manually_dashboards$">
+      <title>[The Watch] [Manual] Begin a watch on new "$label_lookup_type$"</title>
+      <input type="text" token="add_artifacts" searchWhenChanged="false">
+        <label>[ADD] Artifacts (separated by ";")</label>
+      </input>
+      <input type="dropdown" token="add_lifetime" searchWhenChanged="false">
+        <label>[ADD] Lifetime</label>
+        <choice value="+1d">+1 day</choice>
+        <choice value="+3d">+3 days</choice>
+        <choice value="+1w">+1 week</choice>
+        <choice value="+1mon">+1 month</choice>
+        <choice value="+3mon">+3 months</choice>
+        <choice value="+6mon">+6 months</choice>
+        <choice value="+1y">+1 year</choice>
+        <choice value="+2y">+2 years</choice>
+        <choice value="+5y">+5 years</choice>
+        <choice value="+100y">Unlimited</choice>
+      </input>
+      <input type="dropdown" token="add_case" searchWhenChanged="false">
+        <label>[ADD] Case name</label>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_cases</query>
+        </search>
+      </input>
+      <input type="text" token="add_description" searchWhenChanged="false">
+        <label>[ADD] Artifact description</label>
+      </input>
+      <input type="dropdown" token="add_tlp" searchWhenChanged="false">
+        <label>[ADD] TLP</label>
+        <choice value="WHITE">WHITE</choice>
+        <choice value="GREEN">GREEN</choice>
+        <choice value="AMBER">AMBER</choice>
+        <choice value="RED">RED</choice>
+      </input>
+      <input type="dropdown" token="add_confidence_level" searchWhenChanged="false">
+        <label>[ADD] Confidence Level</label>
+        <choice value="0.238">LOW</choice>
+        <choice value="0.382">MEDIUM</choice>
+        <choice value="0.618">HIGH</choice>
+        <choice value="1">ABSOLUTE</choice>
+      </input>
+      <table>
+        <title>Please fill in all the inputs above and click on "submit"</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="add_artifacts"></unset>
+              <unset token="form.add_artifacts"></unset>
+              <unset token="add_lifetime"></unset>
+              <unset token="form.add_lifetime"></unset>
+              <unset token="add_case"></unset>
+              <unset token="form.add_case"></unset>
+              <unset token="add_description"></unset>
+              <unset token="form.add_description"></unset>
+              <unset token="add_tlp"></unset>
+              <unset token="form.add_tlp"></unset>
+              <unset token="add_confidence_level"></unset>
+              <unset token="form.add_confidence_level"></unset>
+              <unset token="mode"></unset>
+              <unset token="form.mode"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+| append 
+    [| stats count
+    | eval artifact = "$add_artifacts$", start_date = now(), end_date = round(relative_time(now(),"$add_lifetime$")), remove_date = round(relative_time(end_date,"$add_lifetime$")), case_id = "$add_case$", description = "$add_description$", tlp = "$add_tlp$", confidence_level="$add_confidence_level$", created_by = "$env:user$:"+tostring(now()), status = 1, updated=now()
+    | makemv delim=";" artifact
+    | mvexpand artifact
+    | eval artifact = case("$lookup_type$"="thewatch_admin_artifact_ip",
+                          if(NOT match(artifact,"\/\d+"),artifact+"/32",artifact),
+                      "$lookup_type$"="thewatch_admin_artifact_hash",
+                          replace(artifact," ",""),
+                      "$lookup_type$"="thewatch_admin_artifact_url",
+                          if(NOT match(artifact,"^\*") AND NOT match(artifact,"\*$"),"*"+replace(artifact,"^https?:\/\/","")+"*",replace(artifact,"^https?:\/\/","")),
+                      "$lookup_type$"="thewatch_admin_artifact_user",
+                          if(NOT match(artifact,"^\*") AND NOT match(artifact,"\*$"),"*"+artifact+"*",artifact),
+                      1=1,
+                          artifact),
+                     id=sha256(tostring(now())+artifact+created_by)
+    | table id, artifact, start_date, end_date, remove_date, case_id, description, tlp, confidence_level, created_by, status, updated]
+`THEWATCH_audit_event($lookup_type$,$env:user$,"add","Adding new artifact(s) manually")`
+| sort 0 -start_date
+| eval tmp_start_date = relative_time(start_date,"@d")
+| dedup artifact, tmp_start_date, description
+| stats last(id) as id, min(start_date) as start_date, max(end_date) as end_date, max(remove_date) as remove_date, values(case_id) as case_id, values(description) as description, max(tlp) as tlp, max(confidence_level) as confidence_level, min(status) as status, max(updated) as updated, values(created_by) as created_by by artifact
+| sort 0 -start_date
+| outputlookup $lookup_type$
+`THEWATCH_format_artifacts()`</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Status">
+          <colorPalette type="map">{"ACTIVE":#53A051,"INACTIVE":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Confidence Level">
+          <colorPalette type="map">{"LOW":#5ECFFC,"MEDIUM":#8EABCA,"HIGH":#CE7B89,"ABSOLUTE":#FC595A}</colorPalette>
+        </format>
+        <format type="color" field="TLP">
+          <colorPalette type="map">{"WHITE":#C3C3C3,"GREEN":#B6C75A,"AMBER":#F5A623,"RED":#FF001F}</colorPalette>
+        </format>
+        <fields>["Artifact","Start Date","Next Date","Case","Description","TLP","Confidence Level","TLP","Status"]</fields>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_add_csv_lookup_dashboards$">
+      <title>[The Watch] [CSV Lookup] Begin a watch: $add_lifetime$ $add_case$ $add_confidence_level$ $add_csv_lookup$</title>
+      <input type="dropdown" depends="$enable_add_csv_lookup_dashboards$" token="add_csv_lookup" searchWhenChanged="false">
+        <label>[ADD] CSV Lookup</label>
+        <fieldForLabel>title_render</fieldForLabel>
+        <fieldForValue>title</fieldForValue>
+        <search>
+          <query>| rest servicesNS/-/TA-ak_thewatch_v2/data/lookup-table-files search="TA-ak_thewatch_v2"
+| eval title_render = title+" ("+author+")"
+| table title
+| where match(title,"^thewatch_csv_import.*")</query>
+          <earliest>-15m</earliest>
+          <latest>now</latest>
+        </search>
+      </input>
+      <input type="dropdown" token="add_lifetime" searchWhenChanged="false">
+        <label>[ADD] Lifetime</label>
+        <choice value="+1d">+1 day</choice>
+        <choice value="+3d">+3 days</choice>
+        <choice value="+1w">+1 week</choice>
+        <choice value="+1mon">+1 month</choice>
+        <choice value="+3mon">+3 months</choice>
+        <choice value="+6mon">+6 months</choice>
+        <choice value="+1y">+1 year</choice>
+        <choice value="+2y">+2 years</choice>
+        <choice value="+5y">+5 years</choice>
+        <choice value="+100y">Unlimited</choice>
+      </input>
+      <input type="dropdown" token="add_case" searchWhenChanged="false">
+        <label>[ADD] Case name</label>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_cases</query>
+        </search>
+      </input>
+      <input type="dropdown" token="add_tlp" searchWhenChanged="false">
+        <label>[ADD] TLP</label>
+        <choice value="WHITE">WHITE</choice>
+        <choice value="GREEN">GREEN</choice>
+        <choice value="AMBER">AMBER</choice>
+        <choice value="RED">RED</choice>
+      </input>
+      <input type="dropdown" token="add_confidence_level" searchWhenChanged="false">
+        <label>[ADD] Confidence Level</label>
+        <choice value="0.238">LOW</choice>
+        <choice value="0.382">MEDIUM</choice>
+        <choice value="0.618">HIGH</choice>
+        <choice value="1">ABSOLUTE</choice>
+      </input>
+      <table>
+        <title>Please fill in all the inputs above and click on "submit"</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="add_lifetime"></unset>
+              <unset token="add_case"></unset>
+              <unset token="add_confidence_level"></unset>
+              <unset token="enable_add_csv_lookup_dashboards"></unset>
+              <unset token="form.mode"></unset>
+              <unset token="add_artifacts"></unset>
+              <unset token="form.add_artifacts"></unset>
+              <unset token="add_lifetime"></unset>
+              <unset token="form.add_lifetime"></unset>
+              <unset token="add_case"></unset>
+              <unset token="form.add_case"></unset>
+              <unset token="add_description"></unset>
+              <unset token="form.add_description"></unset>
+              <unset token="add_tlp"></unset>
+              <unset token="form.add_tlp"></unset>
+              <unset token="add_confidence_level"></unset>
+              <unset token="form.add_confidence_level"></unset>
+              <unset token="mode"></unset>
+              <unset token="form.mode"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $add_csv_lookup$
+| fields type
+| eval title = "thewatch_admin_artifact_"+lower(type), sub_type=type
+| stats count by title, type, sub_type
+| join title 
+    [| rest servicesNS/-/-/data/transforms/lookups
+    | rename eai:acl.app as app
+    | where match(app,"TA-ak_thewatch") AND match(title,"^thewatch_admin_artifact_.*")
+    | table title]
+| table title, type, sub_type
+| map maxsearches=50000 search="| inputlookup $$title$$
+| append 
+[| inputlookup $add_csv_lookup$
+| where type==\"$$sub_type$$\"
+    | where isnotnull(artifact) AND isnotnull(description)
+    | eval start_date = now(), lifetime = \"$add_lifetime$\", end_date = round(relative_time(now(),lifetime)), case_id = \"$add_case$\", status = 1, tlp=$add_tlp$, confidence_level=$add_confidence_level$ , created_by = \"$env:user$:\"+tostring(now()), remove_date = round(relative_time(end_date,lifetime)), updated=now()
+    | eval artifact = case(\"$$title$$\"=\"thewatch_admin_artifact_ip\",
+                          if(NOT match(artifact,\"\/\d+\"),artifact+\"/32\",artifact),
+                      \"$$title$$\"=\"thewatch_admin_artifact_hash\",
+                          replace(artifact,\" \",\"\"),
+                      \"$$title$$\"=\"thewatch_admin_artifact_url\",
+                          if(NOT match(artifact,\"^\*\") AND NOT match(artifact,\"\*$\"),\"*\"+replace(artifact,\"^https?:\/\/\",\"\")+\"*\",replace(artifact,\"^https?:\/\/\",\"\")),
+                      \"$$title$$\"=\"thewatch_admin_artifact_user\",
+                          if(NOT match(artifact,\"^\*\") AND NOT match(artifact,\"\*$\"),\"*\"+artifact+\"*\",artifact),
+                      1=1,
+                          artifact),
+                     id=sha256(tostring(now())+artifact+created_by)    
+
+    | table artifact, case_id, confidence_level, created_by, description, end_date, id, remove_date, start_date, status, tlp, updated]
+
+    | sort 0 -start_date
+    | dedup artifact, start_date, case_id, description
+    | stats values(case_id) as case_id, values(confidence_level) as confidence_level, values(created_by) as created_by, values(description) as description, max(end_date) as end_date, first(id) as id, max(remove_date) as remove_date, min(start_date) as start_date, max(tlp) as tlp, max(status) as status, max(updated) as updated by artifact
+    | sort 0 -start_date
+    | outputlookup $$title$$
+    | eventstats max(start_date) as latest_date
+    | where latest_date=start_date
+    | stats count
+    | eval Type = \"$$sub_type$$\"
+    | table Type, count
+    | rename count as \"Updated/Added artifacts\"
+"
+          </query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Confidence Level">
+          <colorPalette type="map">{"LOW":#5ECFFC,"MEDIUM":#8EABCA,"HIGH":#CE7B89,"ABSOLUTE":#FC595A}</colorPalette>
+        </format>
+        <format type="color" field="TLP">
+          <colorPalette type="map">{"WHITE":#C3C3C3,"GREEN":#B6C75A,"AMBER":#F5A623,"RED":#FF001F}</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_show_inputs_dashboards$">
+      <title>[The Watch] Ongoing watched artifacts</title>
+      <input type="text" token="show_artifact_filter" searchWhenChanged="true">
+        <label>[FILTER] Artifact</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <input type="text" token="show_case_filter" searchWhenChanged="true">
+        <label>[FILTER] Case</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <input type="text" token="show_description_filter" searchWhenChanged="true">
+        <label>[FILTER] Description</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup $lookup_type$
+| eval refresh_time = "$refresh_statistics$"
+| fields - refresh_time
+| sort 0 -start_date
+| where artifact!="-" AND (match(artifact,"(?i:$show_artifact_filter$)") AND match(description,"(?i:$show_description_filter$)"))
+`THEWATCH_format_artifacts()`
+| where match(Case,"(?i:$show_case_filter$)")</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Status">
+          <colorPalette type="map">{"ACTIVE":#53A051,"INACTIVE":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Confidence Level">
+          <colorPalette type="map">{"LOW":#5ECFFC,"MEDIUM":#8EABCA,"HIGH":#CE7B89,"ABSOLUTE":#FC595A}</colorPalette>
+        </format>
+        <format type="color" field="TLP">
+          <colorPalette type="map">{"WHITE":#C3C3C3,"GREEN":#B6C75A,"AMBER":#F5A623,"RED":#FF001F}</colorPalette>
+        </format>
+        <fields>["Artifact","Start Date","Next Date","Case","Description","TLP","Confidence Level","TLP","Status"]</fields>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_edit_inputs_dashboards$">
+      <title>[The Watch] Edit information of artifacts</title>
+      <input type="text" token="edit_artifact_filter" searchWhenChanged="true">
+        <label>[FILTER] Artifact</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <input type="text" token="edit_case_filter" searchWhenChanged="true">
+        <label>[FILTER] Case</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <input type="dropdown" token="edit_case" searchWhenChanged="true">
+        <label>[EDIT] Set case to:</label>
+        <fieldForLabel>name</fieldForLabel>
+        <fieldForValue>id</fieldForValue>
+        <search>
+          <query>| inputlookup thewatch_cases</query>
+        </search>
+      </input>
+      <input type="text" token="edit_description" searchWhenChanged="true">
+        <label>[EDIT] Set description to:</label>
+      </input>
+      <input type="dropdown" token="edit_lifetime" searchWhenChanged="true">
+        <label>[EDIT] Set lifetime to</label>
+        <choice value="-5y">- 5 years</choice>
+        <choice value="-2y">- 2 years</choice>
+        <choice value="-1y">- 1 year</choice>
+        <choice value="-6mon">- 6 months</choice>
+        <choice value="-3mon">- 3 months</choice>
+        <choice value="-1mon">- 1 month</choice>
+        <choice value="-1w">- 1 week</choice>
+        <choice value="-3d">- 3 days</choice>
+        <choice value="-1d">- 1 day</choice>
+        <choice value="+1d">+ 1 day</choice>
+        <choice value="+3d">+ 3 days</choice>
+        <choice value="+1w">+ 1 week</choice>
+        <choice value="+1mon">+ 1 month</choice>
+        <choice value="+3mon">+ 3 months</choice>
+        <choice value="+6mon">+ 6 months</choice>
+        <choice value="+1y">+ 1 year</choice>
+        <choice value="+2y">+ 2 years</choice>
+        <choice value="+5y">+ 5 years</choice>
+        <choice value="+100y">Unlimited</choice>
+        <change>
+          <set token="lifetime_preview">$label$</set>
+          <set token="lifetime">$value$</set>
+        </change>
+      </input>
+      <input type="dropdown" token="edit_tlp" searchWhenChanged="true">
+        <label>[EDIT] Set TLP to:</label>
+        <choice value="WHITE">WHITE</choice>
+        <choice value="GREEN">GREEN</choice>
+        <choice value="AMBER">AMBER</choice>
+        <choice value="RED">RED</choice>
+      </input>
+      <input type="dropdown" token="edit_confidence_level" searchWhenChanged="true">
+        <label>[EDIT] Set confidence level to:</label>
+        <choice value="0.238">LOW</choice>
+        <choice value="0.382">MEDIUM</choice>
+        <choice value="0.618">HIGH</choice>
+        <choice value="1">ABSOLUTE</choice>
+      </input>
+      <input type="radio" token="edit_change_by" searchWhenChanged="true">
+        <label>Change by</label>
+        <choice value="byartifact">Artifact</choice>
+        <choice value="bycase">Case name</choice>
+        <default>byartifact</default>
+        <initialValue>byartifact</initialValue>
+      </input>
+      <table>
+        <title>Click on the appropriate case of an artifact to change information</title>
+        <search>
+          <query>| inputlookup $lookup_type$
+`THEWATCH_format_artifacts_edit()`
+| where Artifact!="-" AND (match(Artifact,"(?i:$edit_artifact_filter$)") AND match(Case,"(?i:$edit_case_filter$)"))
+| eval tmp = $refresh_statistics$, actions = "➕ Add to case;⏲️ Extend lifetime;"+if(Status=="ACTIVE","🔴 Disable","🟢 Enable")+" ($edit_change_by$)"
+| fields - tmp
+| makemv delim=";" actions
+| rename actions as Actions</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Status">
+          <colorPalette type="map">{"ACTIVE":#53A051,"INACTIVE":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Confidence Level">
+          <colorPalette type="map">{"LOW":#5ECFFC,"MEDIUM":#8EABCA,"HIGH":#CE7B89,"ABSOLUTE":#FC595A}</colorPalette>
+        </format>
+        <format type="color" field="TLP">
+          <colorPalette type="map">{"WHITE":#C3C3C3,"GREEN":#B6C75A,"AMBER":#F5A623,"RED":#FF001F}</colorPalette>
+        </format>
+        <fields>["Artifact","Start Date","Next Date","Case","Description","Confidence Level","TLP","Status","Actions"]</fields>
+        <drilldown>
+          <condition field="Case">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_remove_case_id">replace($click.value2$,": .*","")</eval>
+            <set token="edit_remove_case_field">case_id</set>
+          </condition>
+          <condition field="Description">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_case_id">mvindex($row.case_id$,0)</eval>
+            <set token="edit_field">description</set>
+            <eval token="edit_value">if(isnotnull($edit_description$) AND $edit_description$!="",$edit_description$,$row.Description$)</eval>
+          </condition>
+          <condition field="TLP">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_case_id">mvindex($row.case_id$,0)</eval>
+            <set token="edit_field">tlp</set>
+            <eval token="edit_value">if(isnotnull($edit_tlp$) AND $edit_tlp$!="",$edit_tlp$,$row.tlp_value$)</eval>
+          </condition>
+          <condition field="Confidence Level">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_case_id">mvindex($row.case_id$,0)</eval>
+            <set token="edit_field">confidence_level</set>
+            <eval token="edit_value">if(isnotnull($edit_confidence_level$) AND $edit_confidence_level$!="",$edit_confidence_level$,$row.confidence_level_value$)</eval>
+          </condition>
+          <condition match="$click.value2$ == &quot;➕ Add to case&quot;">
+            <set token="edit_id">$row.id$</set>
+            <set token="edit_add_case_id">$edit_case$</set>
+            <set token="edit_add_case_field">case_id</set>
+          </condition>
+          <condition match="$click.value2$ == &quot;⏲️ Extend lifetime&quot;">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_case_id">mvindex($row.case_id$,0)</eval>
+            <eval token="edit_extend_lifetime">if(isnotnull($edit_lifetime$) AND $edit_lifetime$!="",$edit_lifetime$,"+0d")</eval>
+          </condition>
+          <condition match="match($click.value2$,&quot;Enable|Disable&quot;)">
+            <set token="edit_id">$row.id$</set>
+            <eval token="edit_case_id">mvindex($row.case_id$,0)</eval>
+            <set token="edit_status">1</set>
+          </condition>
+          <condition></condition>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[DEBUG ONLY] Edit an artifact : ID=$edit_id$, Case ID=$edit_case_id$, Field=$edit_field$, Value=$edit_value$</title>
+      <table>
+        <search>
+          <done>
+            <condition>
+              <unset token="edit_id"></unset>
+              <unset token="edit_case_id"></unset>
+              <unset token="edit_field"></unset>
+              <unset token="edit_value"></unset>
+              <eval token="refresh_statistics">now()</eval>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+| eval old_value = $edit_field$
+| eval updated=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$",now(),updated), $edit_field$=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$","$edit_value$",$edit_field$)
+`THEWATCH_audit_event("$edit_id$","$edit_case_id$","$edit_change_by$",$lookup_type$,$env:user$,"edit","Editing field $edit_field$ with new value")`
+| fields - old_value
+| dedup id
+| sort 0 -start_date
+| outputlookup $lookup_type$</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[The Watch] Lifetime change on selected artifacts</title>
+      <table>
+        <title>Last changed : $edit_id$ - Case: $edit_case_id$ - Change: $edit_change_by$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="edit_id"></unset>
+              <unset token="edit_case_id"></unset>
+              <unset token="edit_extend_lifetime"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+| eval old_value = end_date
+| eval updated=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$",now(),updated), end_date=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$",relative_time(end_date,"$edit_extend_lifetime$"),end_date), remove_date=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$",relative_time(remove_date,"$edit_extend_lifetime$"),remove_date)
+`THEWATCH_audit_event("$edit_id$","$edit_case_id$","$edit_change_by$",$lookup_type$,$env:user$,"edit","Extending lifetime of artifact(s)")`
+| fields - old_value
+| dedup id
+| sort 0 -start_date
+| outputlookup $lookup_type$</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[The Watch] Add a case on selected artifact</title>
+      <table>
+        <title>Last changed : ID: $edit_id$ - Field : $edit_add_case_field$ - Value : $edit_add_case_id$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="edit_id"></unset>
+              <unset token="edit_add_case_field"></unset>
+              <unset token="edit_add_case_id"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+| eval updated=if(id=="$edit_id$",now(),updated), $edit_add_case_field$=if(id=="$edit_id$",mvdedup(mvappend(mvfilter(NOT match($edit_add_case_field$,"-")),"$edit_add_case_id$")),$edit_add_case_field$)
+`THEWATCH_audit_event("$edit_id$","-","-",$lookup_type$,$env:user$,"edit","Add artifact to $edit_add_case_field$")`
+| dedup id
+| sort 0 -start_date
+| outputlookup $lookup_type$</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[The Watch] Remove a case on selected artifact</title>
+      <table>
+        <title>Last changed : ID: $edit_id$ - Field : $edit_remove_case_field$ - Value : $edit_remove_case_id$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="edit_id"></unset>
+              <unset token="edit_remove_case_field"></unset>
+              <unset token="edit_remove_case_id"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+| eval updated=if(id=="$edit_id$",now(),updated), $edit_remove_case_field$=if(id=="$edit_id$",mvfilter(NOT match($edit_remove_case_field$,"^$edit_remove_case_id$")),$edit_remove_case_field$)
+`THEWATCH_audit_event("$edit_id$","-","-",$lookup_type$,$env:user$,"edit","Remove $edit_remove_case_field$ from artifact")`
+| fillnull value="-" case_id
+| dedup id
+| sort 0 -start_date
+| outputlookup $lookup_type$</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[The Watch] Status change on selected artifact</title>
+      <table>
+        <title>Last changed : $edit_id$ - Case: $edit_case_id$ - Change: $edit_change_by$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="edit_id"></unset>
+              <unset token="edit_case_id"></unset>
+              <unset token="edit_status"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+| eval old_value = status, new_value = 1-status, edit_status="$edit_status$"
+| eval updated=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$",now(),updated), status=if(("$edit_change_by$"=="bycase" OR id=="$edit_id$") AND case_id=="$edit_case_id$",1-status,status)
+`THEWATCH_audit_event("$edit_id$","$edit_case_id$","$edit_change_by$",$lookup_type$,$env:user$,"edit","Switching status of artifact(s)")`
+| fields - old_value new_value edit_status
+| dedup id
+| sort 0 -start_date
+| outputlookup $lookup_type$</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$enable_delete_inputs_dashboards$">
+      <title>[The Watch] Delete artifacts</title>
+      <input type="text" token="delete_artifact_filter" searchWhenChanged="true">
+        <label>[FILTER] Artifact</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <input type="text" token="delete_case_filter" searchWhenChanged="true">
+        <label>[FILTER] Case</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <input type="radio" token="delete_by" searchWhenChanged="true">
+        <label>Delete by</label>
+        <choice value="byartifact">Artifact</choice>
+        <choice value="bycase">Case name</choice>
+        <default>byartifact</default>
+        <initialValue>byartifact</initialValue>
+      </input>
+      <table>
+        <search>
+          <query>| inputlookup $lookup_type$
+| eval refresh_time = "$refresh_statistics$"
+| fields - refresh_time
+| sort 0 -start_date
+| where artifact!="-" AND match(artifact,"(?i:$delete_artifact_filter$)")
+`THEWATCH_format_artifacts()`
+| where match(Case,"(?i:$delete_case_filter$)")</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Case">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Status">
+          <colorPalette type="map">{"ACTIVE":#53A051,"INACTIVE":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Confidence Level">
+          <colorPalette type="map">{"LOW":#5ECFFC,"MEDIUM":#8EABCA,"HIGH":#CE7B89,"ABSOLUTE":#FC595A}</colorPalette>
+        </format>
+        <fields>["Artifact","Start Date","Next Date","Case","Description","Confidence Level","TLP","Status"]</fields>
+        <drilldown>
+          <set token="delete_id">$row.id$</set>
+          <eval token="delete_case_id">mvindex($row.case_id$,0)</eval>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$debug$">
+      <title>[The Watch] Delete selected artifacts</title>
+      <table>
+        <title>Last deleted : $delete_id$ - Case: $delete_case_id$ - Change: $delete_by$</title>
+        <search>
+          <done>
+            <condition>
+              <eval token="refresh_statistics">now()</eval>
+              <unset token="delete_id"></unset>
+              <unset token="delete_case_id"></unset>
+            </condition>
+          </done>
+          <query>| inputlookup $lookup_type$
+`THEWATCH_audit_event("$delete_id$","$delete_case_id$","$delete_by$",$lookup_type$,$env:user$,"delete","Deleting artifact(s) manually")`
+| where NOT (("$delete_by$"=="bycase" OR id=="$delete_id$") AND case_id=="$delete_case_id$")
+| outputlookup $lookup_type$</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "Databases"
+| table text</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">74</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">database</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#666666</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[The Watch] Statistics by lookup</title>
+      <table>
+        <search>
+          <query>| rest servicesNS/-/-/data/transforms/lookups
+| rename eai:acl.app as app
+| where match(app,"TA-ak_thewatch_v2") AND match(title,"^thewatch_admin_artifact_.*")
+| table title
+| map search="| inputlookup $$title$$ | eval title = \"$$title$$\"" maxsearches=10000
+| rex field=title "thewatch_admin_artifact_(?&lt;title&gt;[^\.]+)"
+| eval tmp = $refresh_statistics$, Type = upper(title)
+| stats dc(artifact) as "Distinct artifacts", count as "Total artifacts" by Type</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">true</option>
+        <format type="color" field="description">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[The Watch] Next artifacts to be deleted</title>
+      <input type="dropdown" token="next_months" searchWhenChanged="true">
+        <label>In the next</label>
+        <choice value="+3mon@mon">3 months</choice>
+        <choice value="+6mon@mon">6 months</choice>
+        <choice value="+1y">12 months</choice>
+        <default>+6mon@mon</default>
+        <initialValue>+6mon@mon</initialValue>
+      </input>
+      <chart>
+        <search>
+          <query>| rest servicesNS/-/-/data/transforms/lookups
+| rename eai:acl.app as app
+| where match(app,"TA-ak_thewatch") AND match(title,"^thewatch_admin_artifact_.*")
+| table title
+| map search="| inputlookup $$title$$ | where remove_date&lt;=relative_time(now(),\"$next_months$\") | eval title = \"$$title$$\"" maxsearches=10000
+| rex field=title "thewatch_admin_artifact_(?&lt;title&gt;[^\.]+)"
+| eval tmp = $refresh_statistics$, Type = upper(title)
+| rename remove_date as _time
+| timechart count by Type</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| stats count
+| eval text = "Internal Mapping"
+| table text</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">74</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="status_indicator_app.status_indicator.colorBy">static_color</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">background</option>
+        <option name="status_indicator_app.status_indicator.fixIcon">code</option>
+        <option name="status_indicator_app.status_indicator.icon">fix_icon</option>
+        <option name="status_indicator_app.status_indicator.precision">0</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#b0afb0</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[The Watch] Ongoing configuration</title>
+      <table>
+        <title>This is all the fields per sourcetype that are used by "The Watch" to detect artifacts :</title>
+        <search>
+          <done>
+            <condition>
+              <set token="sid_internal_mapping">$job.sid$</set>
+            </condition>
+          </done>
+          <query>| rest servicesNS/-/-/data/props/lookups
+| rename eai:acl.app as app
+| where match(app,"TA-ak_thewatch_v2") AND NOT match(attribute,"^LOOKUP-THEWATCH_(?:DATABASE|ENRICHMENT).*") AND match(attribute,"^LOOKUP-THEWATCH.*")
+| rex field=value "thewatch_artifact_(?&lt;type&gt;[^ ]+) artifact AS (?&lt;field&gt;[^ ]+)"
+| eval type = upper(type)
+| table stanza, type, field
+| sort stanza
+| rename stanza as "Sourcetype", type as "Type", field as "Field"</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Sourcetype">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Type">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

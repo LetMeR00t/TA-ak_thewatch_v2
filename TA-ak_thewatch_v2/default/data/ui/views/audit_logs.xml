@@ -1,0 +1,350 @@
+<form version="1.1">
+  <label>Audit logs</label>
+  <description>This dashboard is used to monitor audit logs from scripts</description>
+  <fieldset submitButton="false">
+    <input type="time" token="time">
+      <label>Time</label>
+      <default>
+        <earliest>-2h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="auto_refresh" searchWhenChanged="true">
+      <label>Auto refresh</label>
+      <choice value="0m">None</choice>
+      <choice value="1m">1 minute</choice>
+      <choice value="5m">5 minutes</choice>
+      <default>0m</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Audit logs : Modular alerts regarding The Watch v2 (Custom Alert Action)</title>
+      <table>
+        <search>
+          <query>index=cim_modactions sourcetype="modular_alerts:*" (app="TA-ak_thewatch_v2" OR source="*the_watch_v2_create_notable_events_modalert.log")
+| rex field=_raw "^\d+\-\d+\-\d+ \d+:\d+:\d+,\d+ (?&lt;level&gt;[^ ]+)"
+| eval signature = coalesce(signature,_raw)
+| sort 0 -_time  
+| table  _time user sid level signature
+| rename  user as "User", sid as "SID", level as "Level", signature as "Signature"</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>$auto_refresh$</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Level">
+          <colorPalette type="map">{"ERROR":#DC4E41,"WARNING":#F1813F,"INFO":#62B3B2,"DEBUG":#708794,"WARN":#F1813F}</colorPalette>
+        </format>
+        <format type="color" field="SID">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="User">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Audit logs: Number of events within the The Watch index</title>
+      <input type="dropdown" token="show_by" searchWhenChanged="true">
+        <label>Show by</label>
+        <choice value="orig_sourcetype">Original Sourcetype</choice>
+        <choice value="thewatch_artifact">Artifact</choice>
+        <choice value="savedsearch_name">Savedsearch name</choice>
+        <default>orig_sourcetype</default>
+      </input>
+      <chart>
+        <search>
+          <query>sourcetype="stash_thewatchv2_notable_events"
+| rename thewatch_sid as sid
+| join sid [search index=_internal savedsearch_name="[The Watch] Notable event found !*" sourcetype=scheduler
+    | stats count by savedsearch_name, sid
+    | table savedsearch_name, sid]
+| timechart span=1min count by $show_by$</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>$auto_refresh$</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="height">399</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Audit logs: Jobs execution</title>
+      <input type="multiselect" token="filter_status">
+        <label>[Filter] Status</label>
+        <choice value="delegated_remote">1. Delegated Remote</choice>
+        <choice value="delegated_remote_completion">2. Delegated Remote Completion</choice>
+        <choice value="success">3. Success</choice>
+        <default>delegated_remote,delegated_remote_completion,success</default>
+        <prefix>(</prefix>
+        <suffix>)</suffix>
+        <valuePrefix>"</valuePrefix>
+        <valueSuffix>"</valueSuffix>
+        <delimiter>,</delimiter>
+      </input>
+      <table>
+        <title>In normal conditions, we have always 3 events for a given SID (status = delegated_remote, status = delegated_remote_completion and (overall) status = success)</title>
+        <search>
+          <query>(index=_internal "[The Watch] Notable event found !*" sourcetype=scheduler status IN $filter_status$) OR (index=_internal sourcetype=splunkd "the_watch_v2_create_notable_events" "ERROR")
+| eval job_info = mvappend("Savedsearch: "+savedsearch_name,"Status: "+status,"Result count: "+result_count,"Run time: "+run_time,"Scheduled time: "+strftime(scheduled_time,"%c"),"Dispatched time: "+strftime(dispatch_time,"%c"),"Terminated at: "+strftime(dispatch_time+run_time,"%c")), event = coalesce(job_info,event_message,_raw), event = mvappend("Source: "+source,event)
+| sort 0 -_time
+| table _time, sid, host, member_label, log_level, event
+| rename host as "Host", member_label as "Sent to", sid as "SID", event as Event, log_level as "Log level"</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>$auto_refresh$</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="sid">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="SID">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Host">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Status">
+          <colorPalette type="map">{"success":#53A051,"failure":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Log level">
+          <colorPalette type="map">{"ERROR":#DC4E41,"WARNING":#F1813F,"INFO":#62B3B2,"DEBUG":#708794,"WARN":#F1813F}</colorPalette>
+        </format>
+        <format type="color" field="Sent to">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Audit logs: Jobs execution (only successed jobs)</title>
+      <table>
+        <title>If one search is not appearing here whereas it should be executed, investigate on the "delegated_remote*" messages to check if the search was scheduled</title>
+        <search>
+          <query>index=_internal sourcetype=scheduler app="TA-ak_thewatch_v2" user="nobody" status IN $filter_status$
+| sort 0 savedsearch_name -_time
+| eval end_time = dispatch_time+run_time, dispatch_time=strftime(dispatch_time,"%c"), end_time=strftime(end_time,"%c"), scheduled_time=strftime(scheduled_time,"%c")
+| table host status savedsearch_name, sid, scheduled_time, dispatch_time, end_time</query>
+          <earliest>-2h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="scheduled_time">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="savedsearch_name">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="status">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Audit logs: Jobs execution - Average run time by savedsearch</title>
+      <chart>
+        <search>
+          <query>index=_internal sourcetype=scheduler app="TA-ak_thewatch_v2" user="nobody"
+| timechart span=1min avg(run_time) by savedsearch_name</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>$auto_refresh$</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"Overload Threshold","Maximum Limit"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"Overload Threshold": 0xFFF200, "Maximum Limit": 0xFF0000}</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="height">320</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Audit logs: Jobs execution - Number of executed searches by savedsearch</title>
+      <input type="dropdown" token="savedsearch_name">
+        <label>Savedsearch</label>
+        <choice value="[The Watch] Notable event*">Any</choice>
+        <fieldForLabel>savedsearch_name</fieldForLabel>
+        <fieldForValue>savedsearch_name</fieldForValue>
+        <search>
+          <query>index=_internal sourcetype=scheduler app="TA-ak_thewatch_v2" user="nobody" status IN ("delegated_remote","success") savedsearch_name="[The Watch] Notable event*"
+| stats count by savedsearch_name</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+      </input>
+      <viz type="timeline_app.timeline">
+        <title>If one search is running 5 times at the same time, there is an issue over the detections</title>
+        <search>
+          <query>index=_internal sourcetype=scheduler app="TA-ak_thewatch_v2" user="nobody" status IN ("delegated_remote","success") savedsearch_name="$savedsearch_name$"
+| transaction sid
+| where eventcount==2
+| eval duration = duration*1000, sid = savedsearch_name+" - "+sid
+| sort 0 savedsearch_name _time
+| table _time sid duration</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>$auto_refresh$</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">762</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="timeline_app.timeline.axisTimeFormat">SECONDS</option>
+        <option name="timeline_app.timeline.colorMode">categorical</option>
+        <option name="timeline_app.timeline.maxColor">#DA5C5C</option>
+        <option name="timeline_app.timeline.minColor">#FFE8E8</option>
+        <option name="timeline_app.timeline.numOfBins">6</option>
+        <option name="timeline_app.timeline.tooltipTimeFormat">SECONDS</option>
+        <option name="timeline_app.timeline.useColors">0</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Audit logs: The Watch events ingestion to indexers</title>
+      <table>
+        <search>
+          <query>index=_internal source IN ("/tech/splunk/var/log/splunk/metrics.log",/opt/splunk/var/log/splunk/license_usage.log) "/tech/splunk/var/spool/splunk/*.stash_action_thewatchv2_notable_event"
+| rex field=source "\/(?&lt;source_file&gt;[^\/]+$)"
+| sort 0 -_time
+| table _time, host, source_file, event_message
+| rename host as "Host", source_file as "File", event_message as "Event message"</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>$auto_refresh$</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Host">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="File">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,18 @@
+.wrapper {
+  text-align: center;
+}
+
+.custom_btn {
+  color: white;
+  font-size: 25px;
+  margin-right: 40px;
+  margin-left: 40px;
+}
+
+.custom_btn:hover, .custom_btn:focus {
+  color: white;
+}
+
+.alert_action {
+  background-color: #AFAFAF;
+}
