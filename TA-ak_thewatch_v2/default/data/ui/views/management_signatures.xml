@@ -133,7 +133,7 @@
         <format type="color" field="Qualification">
           <colorPalette type="map">$format_qualification_color$</colorPalette>
         </format>
-        <fields>["Author (TW version)","Last update","Name","Related Tag","Search","Comment","Reference Number","Priority","Qualification"]</fields>
+        <fields>["Author","Last update","Name","Related Tag","Search","Comment","Reference Number","Priority","Qualification"]</fields>
       </table>
     </panel>
   </row>
@@ -230,7 +230,7 @@
       </input>
       <table id="deletetable">
         <search>
-          <query>| rest servicesNS/-/-/saved/eventtypes search="thewatchQ_* OR thewatch_P*" f=title f=search f=tags f=priority f=description f=color count=0 splunk_server=local
+          <query>| rest servicesNS/-/-/saved/eventtypes search="thewatchQ_*" f=title f=search f=tags f=priority f=description f=color count=0 splunk_server=local
 | where match(title,"$filter_delete$") OR match(search,"$filter_delete$") OR match(description,"$filter_delete$")
 ``` Get ID from the description ```
 | spath input=description path=id output=id
