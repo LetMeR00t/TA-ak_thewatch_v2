@@ -1,25 +1,25 @@
 <nav search_view="search" color="#009AE1">
-  <collection label="Detection">
-    <view name="detection_event_qualification" default="true" />
-    <view name="management_signatures"/>
-  </collection>
-  <collection label="Management">
-    <view name="management_cases"/>
-    <view name="management_artifacts"/>
-    <collection label="Manage: Qualification">
-      <view name="management_qualification_sets"/>
-      <view name="management_qualification_labels"/>
-    </collection>
-    <view name="management_enrichment_database"/>
-    <view name="management_severity_levels"/>
-    <view name="management_tags"/>
-  </collection>
-  <collection label="Setup">
-    <view name="setup_core_optimization"/>
-  </collection>
-  <view name="audit_logs"/>
-  <collection label="Other">
-    <view name="search"/>
-    <view name="dashboards"/>
-  </collection>
+<collection label="Detection">
+<view name="detection_event_qualification" default="true" />
+<view name="management_signatures"/>
+</collection>
+<collection label="Management">
+<view name="management_cases"/>
+<view name="management_artifacts"/>
+<collection label="Manage: Qualification">
+<view name="management_qualification_sets"/>
+<view name="management_qualification_labels"/>
+</collection>
+<view name="management_enrichment_database"/>
+<view name="management_severity_levels"/>
+<view name="management_tags"/>
+</collection>
+<collection label="Setup">
+<view name="setup_core_optimization"/>
+</collection>
+<view name="audit_logs"/>
+<collection label="Other">
+<view name="search"/>
+<view name="dashboards"/>
+</collection>
 </nav>
