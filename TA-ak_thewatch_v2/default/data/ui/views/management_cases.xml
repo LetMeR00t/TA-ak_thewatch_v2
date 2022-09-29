@@ -1,4 +1,4 @@
-<form>
+<form version="1.1">
   <label>Manage: Cases</label>
   <description>This dashboard allows you to manage cases</description>
   <init>
