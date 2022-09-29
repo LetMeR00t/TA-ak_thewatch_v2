@@ -449,6 +449,7 @@ class ModularAction:
         @param cam_header: Optionally exclude the inclusion of the index-time header.
                            Defaults to True (include header).
         """
+
         if cam_header:
             if self.orig_sid:
                 action_idline = ModularAction.DEFAULT_IDLINE % (
