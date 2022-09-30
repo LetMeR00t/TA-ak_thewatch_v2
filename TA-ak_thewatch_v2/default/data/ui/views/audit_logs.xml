@@ -337,8 +337,8 @@
         <search>
           <query>index=_internal sourcetype=scheduler app="TA-ak_thewatch_v2" user="nobody" status IN ("delegated_remote","success") savedsearch_name="$savedsearch_name$"
 | transaction sid
-| where eventcount==2
-| eval duration = duration*1000, sid = savedsearch_name+" - "+sid
+| where eventcount&gt;=1
+| eval duration = if(isnotnull(duration),duration,run_time)*1000, sid = savedsearch_name+" - "+sid
 | sort 0 savedsearch_name _time
 | table _time sid duration</query>
           <earliest>$time.earliest$</earliest>
