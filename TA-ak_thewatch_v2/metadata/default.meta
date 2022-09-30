@@ -1,11 +1,11 @@
 # Application-level permissions
 []
-access = read : [ * ], write : [ admin ]
+access = read : [ * ], write : [ admin , sc_admin  ]
 export = none
 
 ### EVENT TYPES
 [eventtypes]
-access = read : [ * ], write : [ admin ]
+access = read : [ * ], write : [ admin , sc_admin  ]
 export = system
 
 ### PROPS
@@ -16,7 +16,7 @@ export = system
 ### COLLECTIONS
 
 [collections]
-access = read : [ * ], write : [ admin ]
+access = read : [ * ], write : [ admin , sc_admin  ]
 export = system
 
 ### TRANSFORMS
@@ -31,39 +31,39 @@ access = read : [ * ], write : [ * ]
 export = system
 
 [savedsearches/%5BThe%20Watch%5D%20Automatically%20set%20global%20sharing%20to%20a%20signature]
-access = read : [ * ], write : [ admin ]
-owner = admin
+access = read : [ * ], write : [ admin , sc_admin  ]
+owner = admin , sc_admin 
 
 [savedsearches/%5BThe%20Watch%5D%20Notable%20event%20found%20%21]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches/%5BThe%20Watch%5D%20Backup%20KVStore%20%3A%20Weekly]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches/%5BThe%20Watch%5D%20Backup%20KVStore%20%3A%20Monthly]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches/%5BThe%20Watch%5D%20Backup%20KVStore%20%3A%20Daily]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches/%5BThe%20Watch%5D%20Artifacts%20lookup%20%3A%20Automatic%20remove]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches/%5BThe%20Watch%5D%20Artifacts%20lookup%20%3A%20Automatic%20disable]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches/%5BThe%20Watch%5D%20Alerts%20lookup%20clean%20up]
-access = read : [ admin ], write : [ admin ]
+access = read : [ admin , sc_admin  ], write : [ admin , sc_admin  ]
 export = none
 
 [savedsearches]
-access = read : [ * ], write : [ admin ]
+access = read : [ * ], write : [ admin , sc_admin  ]
 export = none
 
 [views]
@@ -73,7 +73,7 @@ export = system
 export = system
 
 [macros]
-access = read : [ * ], write : [ admin ]
+access = read : [ * ], write : [ admin , sc_admin  ]
 export = system
 
 
