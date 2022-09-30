@@ -289,7 +289,7 @@
         <search>
           <query>`THEWATCH_get_notable_events_by_id(*,$case_id$,$filter_artifact_id$,*)`
 | where $thewatch_analysis_field$=="$thewatch_analysis_value$" AND thewatch_nearest_qualification_id IN ($thewatch_analysis_qualification$)
-| eval thewatch_tag_name = thewatch_tag_name+" ("+thewatch_tag_type+")", thewatch_enrichment_name = mvzip(thewatch_enrichment_type, thewatch_enrichment_description,": "), thewatch_enrichment_name = if("$thewatch_analysis_type$"=="alert",mvzip(thewatch_enrichment_name,thewatch_enrichment_score," -&gt; "),thewatch_enrichment_name), thewatch_artifact = if("$thewatch_analysis_type$"=="alert",thewatch_artifact+" ("+thewatch_artifact_confidence_level+")",thewatch_artifact), thewatch_nearest_qualification_score = if("$thewatch_analysis_type$"=="alert",thewatch_nearest_qualification_score,"-"), thewatch_artifact_match_fields = mvmap(thewatch_artifact_match_fields,if(len(mvindex(split(thewatch_artifact_match_fields," == "),1))>100,substr(thewatch_artifact_match_fields,0,100)+"(...)",thewatch_artifact_match_fields))
+| eval thewatch_tag_name = thewatch_tag_name+" ("+thewatch_tag_type+")", thewatch_enrichment_name = mvzip(thewatch_enrichment_type, thewatch_enrichment_description,": "), thewatch_enrichment_name = if("$thewatch_analysis_type$"=="alert",mvzip(thewatch_enrichment_name,thewatch_enrichment_score," -&gt; "),thewatch_enrichment_name), thewatch_artifact = if("$thewatch_analysis_type$"=="alert",thewatch_artifact+" ("+thewatch_artifact_confidence_level+")",thewatch_artifact), thewatch_nearest_qualification_score = if("$thewatch_analysis_type$"=="alert",thewatch_nearest_qualification_score,"-"), thewatch_artifact_match_fields = mvmap(thewatch_artifact_match_fields,if(len(mvindex(split(thewatch_artifact_match_fields," == "),1))&gt;100,substr(thewatch_artifact_match_fields,0,100)+"(...)",thewatch_artifact_match_fields))
 | fillnull value="-" thewatch_enrichment_name
 | stats values(thewatch_artifact_match_fields) as thewatch_artifact_match_fields, values(thewatch_enrichment_name) as thewatch_enrichment_name, count as total by thewatch_case_name, thewatch_artifact, thewatch_tag_name, thewatch_nearest_qualification_name, thewatch_nearest_qualification_score
 | table thewatch_case_name, thewatch_nearest_qualification_name, total, thewatch_tag_name, thewatch_artifact, thewatch_artifact_match_fields, thewatch_enrichment_name, thewatch_nearest_qualification_score
@@ -348,7 +348,7 @@
         <format type="color" field="Qualification">
           <colorPalette type="map">$format_qualification_color$</colorPalette>
         </format>
-        <fields>["Author (TW version)","Name","Related Tag","Search","Comment","Reference Number","Priority","Qualification"]</fields>
+        <fields>["Author","Name","Related Tag","Search","Comment","Reference Number","Priority","Qualification"]</fields>
         <drilldown>
           <condition>
             <link target="_blank">/app/TA-ak_thewatch_v2/management_signatures?form.mode=edit&amp;form.filter_edit=$row.Name$</link>
@@ -663,6 +663,7 @@
           </progress>
           <query>| rest servicesNS/-/-/saved/eventtypes search=thewatchQ_P* f=title f=search f=tags f=priority f=updated f=description count=0
 `THEWATCH_format_signatures()`
+| eval refresh = "$last_update_signatures$"
 | sort 0 -"Last update"
 | table "Last update", Name, "Related Tag", "Search", Comment, "Reference Number", Priority, Qualification
 | head 10</query>

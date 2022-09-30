@@ -179,7 +179,6 @@
 | where match(title,"$filter_edit$") OR match(search,"$filter_edit$") OR match(description,"$filter_edit$")
 | eval last_refresh = $last_refresh$
 `THEWATCH_format_signatures()`
-| search thewatch_version=$filter_version$
 | rename "Reference Number" as reference_number
 | eval Actions = if(isnull(tag_id),"❌ TheWatch v1 signature","▶️ Edit search;▶️ Edit comment;▶️ Edit reference number️"), Search = "⬆️ "+Search, Comment = "⬆️ "+ Comment, reference_number = "⬆️ "+reference_number
 | rename reference_number as "Reference Number"
