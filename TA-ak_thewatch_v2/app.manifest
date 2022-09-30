@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0.0",
+  "info": {
+    "title": "The Watch v2",
+    "id": {
+      "group": null,
+      "name": "TA-ak_thewatch_v2",
+      "version": "2.2.4"
+    },
+    "author": [
+      {
+        "name": "Alexandre DEMEYER & Béranger QUINTANA",
+        "email": null,
+        "company": null
+      }
+    ],
+    "releaseDate": null,
+    "description": "This add-on is used to optimize your detection according to our logs",
+    "classification": {
+      "intendedAudience": null,
+      "categories": [],
+      "developmentStatus": null
+    },
+    "commonInformationModels": null,
+    "license": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
+    "privacyPolicy": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
+    "releaseNotes": {
+      "name": null,
+      "text": null,
+      "uri": null
+    }
+  },
+  "dependencies": {
+  },
+  "tasks": [],
+  "inputGroups": {
+  },
+  "incompatibleApps": {
+  },
+  "platformRequirements": {
+    "splunk": {
+      "Enterprise": "*"
+    }
+  }
+}
