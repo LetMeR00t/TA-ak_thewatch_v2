@@ -19,12 +19,17 @@ Technically speaking, this TA allows you to :
 - For every detection, you can choose the way you want to centralize your alerts and select a qualification for a specific signature (which relies on event types in Splunk)
 - You can customize your qualifications/signatures in order to have specific process (for example, receive an alert in case of a NEW alert and not be alerted when the alert is qualified as FALSE POSITIVE), this is done by having saved searches on which you can customize the actions when The Watch events are detected.
 
+The main concept of this tool is to identify events from known information (IP, URL or any other field extracted by Splunk) without having to create a new search for each artefact, without necessarily knowing which sources are analysed but also to capitalise on the time spent on our investigations.
+
 # Requirements
 In order to work with your logs, you must have setup your logs to follow the [CIM model](https://docs.splunk.com/Documentation/CIM/5.0.1/User/Overview) proposed by Splunk. The Watch is built to detect anomalies over CIM fields. The list of the monitored fields is available under the application through "Manage" > "Manage: Artifacts" on the bottom.
 
 In case you identify that one CIM field is missing in the The Watch configuration, don't hesitate to raise an issue.
 
 Most of the The Watch application is relying on Splunk Enterprise capabilities already present in the tool.
+
+Moreover, we are relying on several external apps:
+- [Splunk Timeline - Custom Visualization](https://splunkbase.splunk.com/app/3120/)
 
 # First installation
 When you install this application for the first time, you have to configure the application on some points.
@@ -33,7 +38,14 @@ Those instructions are available here: [Installation Guide](https://github.com/L
 
 # How does it works ?
 
-TBD
+Let's try to explain how this works through several drawings:
+
+(High Level view)
+![concept_hlv](images/concept_hlv.png)
+
+(Low Level view)
+![concept_llv](images/concept_llv.png)
+
 
 # Configuration
 
@@ -53,10 +65,9 @@ Let's initialize the saved searches used to perform the detection in your logs:
 Let's initialize the saved searches used to perform the notification (or any other action) in your logs:
 
 1. Go to the saved searches under "Settings" > "Searches, reports, and alerts" and select to filter on all owners. Take a closer look to all savedsearches beginning with "The Watch - SOC".
-![savedsearches](images/savedsearches_notification.png)
+![savedsearches_notification](images/savedsearches_notification.png)
 2. If you want to be notified by something else than the internal Splunk alerts (as it's configured by default), you can customize it under the "Trigger Actions" of those savedsearches. Those savedsearches are all the same but have a different behavior depending on the time (see the description to have more information).
 ![savedsearches_notification_action](images/savedsearches_notification_action.png)
-
 
 # Test your detection
 Let's try to make your first detection with the The Watch application. We will look for a specific IP "1.2.3.4/32" and try to be alerted when an event is raised with this value.
@@ -184,10 +195,39 @@ We are presenting here only the detection dashboard but you can imagine having s
 
 Congratulations, you have now validated the detection of an artifact in your logs ! Don't forget to remove the signature, artifact and case that you have created for this example.
 
+# Cases - Aggregation mode : "Case + Qualification" VS "Alert" ?
+
+When you configure your cases, you can choose two aggregation mode: "Case + Qualification" and "Alert"
+
+"Case + Qualification" is the easiest mode that aggregates events from a common case based on their qualification.
+"Alert" is a beta mode in which you try to identify events that are related based on when they happened. Here is an explanation of alerts:
+
+![alerts](images/alerts.png)
+
+Let's try to take an example of detections and see the difference between the two modes on how events are aggregated in the "Detection" dashboard:
+
+![case_qualification_vs_alert](images/case_qualification_vs_alert.png)
+
+Once an alert reached 15 minutes without any new event, a score is calculated based on several items. Based on the score, the severity is deduced depending on this severity levels you have chosen:
+
+![alerts_score](images/alerts_score.png)
+
+
 # Monitoring the application
 If you are using the default savedsearches of The Watch (24/7), they are not optimized and will try to identify artifacts in any sourcetype, whatever if the CIM fields are present or not. As we are performing large searches on the logs (even on a 5 minutes period, it can impact your infrastructure).
 
-TBD
+In addition to the Monitoring Console (DMC), you can use the "Audit logs" dashboard provided in the application to monitor the behavior of The Watch. In this dashboard, you will find several panels that can help you:
+
+| Panel                                                                    | Description                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Audit logs : Modular alerts regarding The Watch v2 (Custom Alert Action) | On this panel, you have access to the custom alert action name "The Watch v2: Create notable events". It can help you to check if the python script is working well (represented by the final message "Successfully created splunk events")   |
+| Audit logs: Number of events within the The Watch index                  | This panel indicates how many events are stored in your The Watch index. If you don't see any event on this view, it means that no event are stored by The Watch, which is an issue                                                           |
+| Audit logs: Number of events within the "main" index                     | This view will help you to identify any configuration issue regarding the The Watch event indexing. If you see any result on this panel, it can indicates an issue of the The Watch events indexing.                                          |
+| Audit logs: Jobs execution                                               | You can monitor here all the jobs execution (when they are scheduled, dispatched and finished). If you have a cluster, it will also indicates the delegated remote job execution.                                                             |
+| Audit logs: Jobs execution (only successed jobs)                         | Same as the previous one but only successed searches. All saved searches have a periodic cron execution (every 5 minutes), if every 5 minutes you do not have a success, this may indicate a problem with the execution of detection searches |
+| Audit logs: Jobs execution - Average run time by savedsearch             | You can monitor here the average run time of all your savedsearches in average to check the latency                                                                                                                                           |
+| Audit logs: Jobs execution - Number of executed searches by savedsearch  | This timeline can help you to check the duration of each search and ensure that you are not exceeding 5 times the same savedsearch running at the same time                                                                                   |
+
 
 # FAQ
 | Question                                                                            | Answer                                                                                                                                                                                                                                                                      |
